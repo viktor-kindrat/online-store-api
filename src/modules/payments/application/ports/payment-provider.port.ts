@@ -5,9 +5,16 @@ export interface CreatePaymentRequest {
   amountMinor: number;
 }
 
+export type PaymentFormFields = Record<
+  string,
+  string | number | Array<string | number>
+>;
+
 export interface PaymentSession {
   providerReference: string;
   redirectUrl: string;
+  method?: 'GET' | 'POST';
+  formFields?: PaymentFormFields;
 }
 
 export interface PaymentEvent {
@@ -19,6 +26,7 @@ export interface PaymentProvider {
   readonly name: string;
   createPayment(request: CreatePaymentRequest): Promise<PaymentSession>;
   verifyWebhook(payload: unknown): PaymentEvent;
+  acknowledgeWebhook?(providerReference: string): unknown;
 }
 
 export interface PaymentProviderFactory {

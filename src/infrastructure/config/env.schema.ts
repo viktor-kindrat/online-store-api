@@ -22,6 +22,12 @@ export const envSchema = z.object({
   STORAGE_DIR: z.string().min(1).default('storage/uploads'),
   CORS_ORIGIN: z.string().min(1).default('http://localhost:3000'),
   BODY_LIMIT: z.string().min(1).default('256kb'),
+  PAYMENT_PROVIDER: z.string().min(1).default('mock'),
+  WAYFORPAY_MERCHANT_ACCOUNT: z.string().optional(),
+  WAYFORPAY_SECRET_KEY: z.string().optional(),
+  WAYFORPAY_DOMAIN: z.string().optional(),
+  PUBLIC_API_URL: z.string().min(1).default('http://localhost:3000'),
+  WEB_PUBLIC_URL: z.string().min(1).default('http://localhost:3000'),
 });
 
 export type Env = z.infer<typeof envSchema>;
