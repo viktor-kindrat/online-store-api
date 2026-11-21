@@ -74,11 +74,14 @@ export function toProductView(
   };
 }
 
-export function toProductImageView(image: ProductImage): ProductImageView {
+export function toProductImageView(
+  image: ProductImage,
+  url: string,
+): ProductImageView {
   return {
     id: image.id,
     productId: image.productId,
-    url: mediaUrlForImage(image.id),
+    url,
     sortOrder: image.sortOrder,
   };
 }

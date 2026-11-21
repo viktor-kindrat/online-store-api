@@ -25,6 +25,7 @@ export const envSchema = z.object({
   AWS_REGION: z.string().min(1).default('eu-central-1'),
   S3_ENDPOINT: z.string().optional(),
   S3_FORCE_PATH_STYLE: booleanFromString.default(false),
+  MEDIA_PUBLIC_BASE_URL: z.string().optional(),
   CORS_ORIGIN: z.string().min(1).default('http://localhost:3000'),
   BODY_LIMIT: z.string().min(1).default('256kb'),
   PAYMENT_PROVIDER: z.string().min(1).default('mock'),

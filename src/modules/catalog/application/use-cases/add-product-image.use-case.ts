@@ -9,6 +9,10 @@ import {
   type ProductRepository,
 } from '../ports/product.repository.port.js';
 import {
+  MEDIA_URL_RESOLVER,
+  type MediaUrlResolver,
+} from '../ports/media-url.resolver.port.js';
+import {
   PRODUCT_IMAGE_REPOSITORY,
   type ProductImageRepository,
 } from '../ports/product-image.repository.port.js';
@@ -36,6 +40,8 @@ export class AddProductImageUseCase {
     @Inject(PRODUCT_IMAGE_REPOSITORY)
     private readonly images: ProductImageRepository,
     @Inject(STORAGE_PORT) private readonly storage: StoragePort,
+    @Inject(MEDIA_URL_RESOLVER)
+    private readonly mediaUrls: MediaUrlResolver,
   ) {}
 
   async execute(command: AddProductImageCommand): Promise<ProductImageView> {
@@ -52,7 +58,7 @@ export class AddProductImageUseCase {
     const sortOrder = await this.images.countByProduct(command.productId);
     const image = ProductImage.create(command.productId, objectKey, sortOrder);
     await this.images.save(image);
-    return toProductImageView(image);
+    return toProductImageView(image, this.mediaUrls.resolve(image));
   }
 
   private extensionFor(originalName: string, contentType: string): string {

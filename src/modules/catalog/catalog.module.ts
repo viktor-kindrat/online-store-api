@@ -5,6 +5,7 @@ import type { Env } from '../../infrastructure/config/env.schema.js';
 import { InventoryModule } from '../inventory/inventory.module.js';
 import { CATEGORY_REPOSITORY } from './application/ports/category.repository.port.js';
 import { MEDIA_ASSET_REPOSITORY } from './application/ports/media-asset.repository.port.js';
+import { MEDIA_URL_RESOLVER } from './application/ports/media-url.resolver.port.js';
 import { PRODUCT_ATTRIBUTE_REPOSITORY } from './application/ports/product-attribute.repository.port.js';
 import { PRODUCT_IMAGE_REPOSITORY } from './application/ports/product-image.repository.port.js';
 import { PRODUCT_REPOSITORY } from './application/ports/product.repository.port.js';
@@ -34,6 +35,7 @@ import { TypeOrmMediaAssetRepository } from './infrastructure/persistence/typeor
 import { TypeOrmProductAttributeRepository } from './infrastructure/persistence/typeorm-product-attribute.repository.js';
 import { TypeOrmProductImageRepository } from './infrastructure/persistence/typeorm-product-image.repository.js';
 import { TypeOrmProductRepository } from './infrastructure/persistence/typeorm-product.repository.js';
+import { PublicMediaUrlResolver } from './infrastructure/media/public-media-url.resolver.js';
 import { LocalFilesystemStorageAdapter } from './infrastructure/storage/local-filesystem-storage.adapter.js';
 import { S3StorageAdapter } from './infrastructure/storage/s3-storage.adapter.js';
 import { AdminCategoriesController } from './presentation/http/admin-categories.controller.js';
@@ -97,6 +99,16 @@ import { ProductsController } from './presentation/http/products.controller.js';
         config.get('STORAGE_DRIVER', { infer: true }) === 's3'
           ? new S3StorageAdapter(config)
           : new LocalFilesystemStorageAdapter(config),
+      inject: [ConfigService],
+    },
+    {
+      provide: MEDIA_URL_RESOLVER,
+      useFactory: (config: ConfigService<Env, true>) => {
+        const baseUrl = config.get('MEDIA_PUBLIC_BASE_URL', { infer: true });
+        return new PublicMediaUrlResolver(
+          baseUrl ? baseUrl.replace(/\/+$/, '') : undefined,
+        );
+      },
       inject: [ConfigService],
     },
     { provide: CATALOG_READER, useClass: CatalogReaderAdapter },

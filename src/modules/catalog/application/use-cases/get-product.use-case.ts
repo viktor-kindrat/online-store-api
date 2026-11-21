@@ -5,6 +5,10 @@ import {
 } from '../../../inventory/public/inventory.port.js';
 import { ProductNotFoundError } from '../../domain/errors/product-not-found.error.js';
 import {
+  MEDIA_URL_RESOLVER,
+  type MediaUrlResolver,
+} from '../ports/media-url.resolver.port.js';
+import {
   PRODUCT_ATTRIBUTE_REPOSITORY,
   type ProductAttributeRepository,
 } from '../ports/product-attribute.repository.port.js';
@@ -32,6 +36,8 @@ export class GetProductUseCase {
     @Inject(PRODUCT_ATTRIBUTE_REPOSITORY)
     private readonly attributes: ProductAttributeRepository,
     @Inject(INVENTORY_PORT) private readonly inventory: InventoryPort,
+    @Inject(MEDIA_URL_RESOLVER)
+    private readonly mediaUrls: MediaUrlResolver,
   ) {}
 
   async execute(id: string): Promise<ProductDetailView> {
@@ -40,7 +46,9 @@ export class GetProductUseCase {
       throw new ProductNotFoundError();
     }
     const images = await this.images.findByProduct(id);
-    const imageViews = images.map(toProductImageView);
+    const imageViews = images.map((image) =>
+      toProductImageView(image, this.mediaUrls.resolve(image)),
+    );
     const view = toProductView(product, imageViews[0]?.url ?? null);
     const attributes = await this.attributes.findByProduct(id);
     const availableQuantity = await this.inventory.getAvailable(id);

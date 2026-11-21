@@ -31,21 +31,26 @@ export class TypeOrmProductImageRepository implements ProductImageRepository {
 
   async findPrimaryByProductIds(
     productIds: string[],
-  ): Promise<Map<string, string>> {
-    const primary = new Map<string, string>();
+  ): Promise<Map<string, ProductImage>> {
+    const primary = new Map<string, ProductImage>();
     if (productIds.length === 0) {
       return primary;
     }
     const rows = await this.repository
       .createQueryBuilder('image')
-      .select(['image.id', 'image.productId', 'image.sortOrder'])
+      .select([
+        'image.id',
+        'image.productId',
+        'image.objectKey',
+        'image.sortOrder',
+      ])
       .where('image.productId IN (:...productIds)', { productIds })
       .orderBy('image.productId', 'ASC')
       .addOrderBy('image.sortOrder', 'ASC')
       .getMany();
     for (const row of rows) {
       if (!primary.has(row.productId)) {
-        primary.set(row.productId, row.id);
+        primary.set(row.productId, toProductImageDomain(row));
       }
     }
     return primary;
