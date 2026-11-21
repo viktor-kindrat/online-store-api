@@ -18,11 +18,10 @@ export class PaymentWebhookController {
   @Public()
   @Post(':provider')
   @HttpCode(HttpStatus.OK)
-  async receive(
+  receive(
     @Param('provider') provider: string,
     @Body() payload: unknown,
-  ): Promise<{ received: boolean }> {
-    await this.handleWebhook.execute({ providerName: provider, payload });
-    return { received: true };
+  ): Promise<unknown> {
+    return this.handleWebhook.execute({ providerName: provider, payload });
   }
 }

@@ -1,10 +1,13 @@
 import type { Payment } from '../../domain/entities/payment.js';
 import type { PaymentStatus } from '../../domain/payment-status.js';
+import type { PaymentFormFields } from '../ports/payment-provider.port.js';
 
 export class PaymentInitiatedView {
   paymentId: string;
   providerReference: string;
   redirectUrl: string;
+  method?: 'GET' | 'POST';
+  formFields?: PaymentFormFields;
 }
 
 export class PaymentAttemptView {

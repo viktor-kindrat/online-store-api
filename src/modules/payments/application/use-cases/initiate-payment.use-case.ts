@@ -46,10 +46,17 @@ export class InitiatePaymentUseCase {
     });
     const attempt = payment.addAttempt(session.providerReference);
     await this.payments.save(payment);
-    return {
+    const view: PaymentInitiatedView = {
       paymentId: payment.id,
       providerReference: attempt.providerReference,
       redirectUrl: session.redirectUrl,
     };
+    if (session.method) {
+      view.method = session.method;
+    }
+    if (session.formFields) {
+      view.formFields = session.formFields;
+    }
+    return view;
   }
 }

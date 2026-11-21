@@ -11,6 +11,7 @@ import {
 import { OrderPaidPublisher } from '../events/order-paid.publisher.js';
 import {
   PAYMENT_PROVIDER_FACTORY,
+  type PaymentProvider,
   type PaymentProviderFactory,
 } from '../ports/payment-provider.port.js';
 import {
@@ -36,22 +37,22 @@ export class HandlePaymentWebhookUseCase {
     private readonly publisher: OrderPaidPublisher,
   ) {}
 
-  async execute(command: HandlePaymentWebhookCommand): Promise<void> {
+  async execute(command: HandlePaymentWebhookCommand): Promise<unknown> {
     const provider = this.providerFactory.create(command.providerName);
     const event = provider.verifyWebhook(command.payload);
     if (!event.providerReference) {
-      return;
+      return this.acknowledge(provider, event.providerReference);
     }
     const payment = await this.payments.findByProviderReference(
       event.providerReference,
     );
     if (!payment || payment.isSettled()) {
-      return;
+      return this.acknowledge(provider, event.providerReference);
     }
     if (event.outcome === 'FAILED') {
       payment.markFailed(event.providerReference);
       await this.payments.save(payment);
-      return;
+      return this.acknowledge(provider, event.providerReference);
     }
     await this.transactions.run(async (tx) => {
       payment.markSucceeded(event.providerReference);
@@ -63,5 +64,16 @@ export class HandlePaymentWebhookUseCase {
       orderId: payment.orderId,
       amountMinor: payment.amountMinor,
     });
+    return this.acknowledge(provider, event.providerReference);
+  }
+
+  private acknowledge(
+    provider: PaymentProvider,
+    providerReference: string,
+  ): unknown {
+    if (provider.acknowledgeWebhook) {
+      return provider.acknowledgeWebhook(providerReference);
+    }
+    return { received: true };
   }
 }
