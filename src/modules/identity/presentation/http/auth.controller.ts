@@ -36,7 +36,6 @@ const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
 const CSRF_TOKEN_BYTES = 32;
 const AUTH_RATE_LIMIT = { default: { limit: 10, ttl: 60000 } };
 
-@Throttle(AUTH_RATE_LIMIT)
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -50,6 +49,7 @@ export class AuthController {
   ) {}
 
   @Public()
+  @Throttle(AUTH_RATE_LIMIT)
   @Post('register')
   async register(
     @Body() dto: RegisterRequestDto,
@@ -62,6 +62,7 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle(AUTH_RATE_LIMIT)
   @HttpCode(HttpStatus.OK)
   @Post('login')
   async login(
@@ -74,6 +75,7 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle(AUTH_RATE_LIMIT)
   @HttpCode(HttpStatus.OK)
   @Post('refresh')
   async refresh(
