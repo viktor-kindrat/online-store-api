@@ -60,6 +60,21 @@ export class DomainExceptionFilter implements ExceptionFilter {
         instance,
       };
     }
+    if (
+      typeof exception === 'object' &&
+      exception !== null &&
+      'status' in exception &&
+      typeof (exception as { status: unknown }).status === 'number'
+    ) {
+      const status = (exception as { status: number }).status;
+      return {
+        type: 'about:blank',
+        title: HttpStatus[status] ?? 'Error',
+        status,
+        code: HttpStatus[status] ?? 'ERROR',
+        instance,
+      };
+    }
     this.logger.error(exception);
     return {
       type: 'about:blank',

@@ -21,6 +21,7 @@ export const envSchema = z.object({
   REFRESH_TTL_DAYS: z.coerce.number().int().positive().default(7),
   STORAGE_DIR: z.string().min(1).default('storage/uploads'),
   CORS_ORIGIN: z.string().min(1).default('http://localhost:3000'),
+  BODY_LIMIT: z.string().min(1).default('256kb'),
 });
 
 export type Env = z.infer<typeof envSchema>;
