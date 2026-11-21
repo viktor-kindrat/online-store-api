@@ -7,9 +7,14 @@ import { AppService } from './app.service.js';
 import { validateEnv } from './infrastructure/config/env.schema.js';
 import { DatabaseModule } from './infrastructure/database/database.module.js';
 import { HealthModule } from './health/health.module.js';
+import { CartModule } from './modules/cart/cart.module.js';
 import { CatalogModule } from './modules/catalog/catalog.module.js';
 import { IdentityModule } from './modules/identity/identity.module.js';
+import { InventoryModule } from './modules/inventory/inventory.module.js';
+import { OrdersModule } from './modules/orders/orders.module.js';
+import { PaymentsModule } from './modules/payments/payments.module.js';
 import { DomainExceptionFilter } from './shared/presentation/domain-exception.filter.js';
+import { SharedModule } from './shared/shared.module.js';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -22,9 +27,14 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
       serviceId: 'online-store-api',
     }),
     DatabaseModule,
+    SharedModule,
     HealthModule,
     IdentityModule,
     CatalogModule,
+    InventoryModule,
+    CartModule,
+    OrdersModule,
+    PaymentsModule,
   ],
   controllers: [AppController],
   providers: [

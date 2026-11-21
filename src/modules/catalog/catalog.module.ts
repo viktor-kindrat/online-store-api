@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CATEGORY_REPOSITORY } from './application/ports/category.repository.port.js';
 import { PRODUCT_REPOSITORY } from './application/ports/product.repository.port.js';
+import { CATALOG_READER } from './public/catalog-reader.port.js';
+import { CatalogReaderAdapter } from './infrastructure/catalog-reader.adapter.js';
 import { ArchiveProductUseCase } from './application/use-cases/archive-product.use-case.js';
 import { CreateCategoryUseCase } from './application/use-cases/create-category.use-case.js';
 import { CreateProductUseCase } from './application/use-cases/create-product.use-case.js';
@@ -38,6 +40,8 @@ import { ProductsController } from './presentation/http/products.controller.js';
     ArchiveProductUseCase,
     { provide: PRODUCT_REPOSITORY, useClass: TypeOrmProductRepository },
     { provide: CATEGORY_REPOSITORY, useClass: TypeOrmCategoryRepository },
+    { provide: CATALOG_READER, useClass: CatalogReaderAdapter },
   ],
+  exports: [CATALOG_READER],
 })
 export class CatalogModule {}
