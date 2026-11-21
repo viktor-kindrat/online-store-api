@@ -124,3 +124,32 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+
+## Local development
+
+Prerequisites: Node 22+, pnpm, Docker.
+
+```bash
+pnpm install
+cp .env.example .env            # adjust DATABASE_PORT if 5432 is taken locally
+pnpm db:up                      # starts PostgreSQL via docker compose
+pnpm start:dev                  # http://localhost:3000, API prefix /api/v1
+```
+
+Health check: `GET /api/v1/health`.
+
+### Database (TypeORM)
+
+```bash
+pnpm migration:generate src/infrastructure/database/migrations/<Name>
+pnpm migration:run
+pnpm migration:revert
+```
+
+### Run everything in Docker
+
+```bash
+docker compose up --build        # API + PostgreSQL
+```
+
+Requires host port 3000 (API) and the configured DATABASE_PORT free.
