@@ -29,9 +29,6 @@ export function configureApp(app: INestApplication): void {
     express.text({ type: () => true, limit: bodyLimit }),
     (request: Request, _response: Response, next: NextFunction) => {
       const raw = typeof request.body === 'string' ? request.body : '';
-      console.warn(
-        `[wfp-webhook] ct=${String(request.headers['content-type'])} len=${raw.length} raw=${raw.slice(0, 800)}`,
-      );
       let parsed: unknown = {};
       if (raw.length > 0) {
         try {
