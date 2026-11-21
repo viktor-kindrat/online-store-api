@@ -1,6 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { Public } from '../../../identity/public/index.js';
-import type { CategoryView } from '../../application/results/catalog-views.js';
+import { CategoryView } from '../../application/results/catalog-views.js';
 import { ListCategoriesUseCase } from '../../application/use-cases/list-categories.use-case.js';
 
 @Controller('categories')

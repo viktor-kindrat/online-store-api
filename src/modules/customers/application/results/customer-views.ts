@@ -1,7 +1,7 @@
 import type { CustomerAddress } from '../../domain/entities/customer-address.js';
 import type { CustomerProfile } from '../../domain/entities/customer-profile.js';
 
-export interface CustomerProfileView {
+export class CustomerProfileView {
   id: string;
   userId: string;
   firstName: string | null;
@@ -9,7 +9,7 @@ export interface CustomerProfileView {
   phone: string | null;
 }
 
-export interface CustomerAddressView {
+export class CustomerAddressView {
   id: string;
   city: string;
   street: string;

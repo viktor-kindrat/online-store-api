@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, ParseUUIDPipe, Patch } from '@nestjs/common';
 import { Roles } from '../../../identity/public/index.js';
-import type { OrderView } from '../../application/results/order-view.js';
+import { OrderView } from '../../application/results/order-view.js';
 import { ChangeOrderStatusUseCase } from '../../application/use-cases/change-order-status.use-case.js';
 import { ListAllOrdersUseCase } from '../../application/use-cases/list-all-orders.use-case.js';
 import { ChangeOrderStatusRequestDto } from './dto/change-order-status.request.dto.js';

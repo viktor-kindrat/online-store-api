@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Patch } from '@nestjs/common';
 import { CurrentUser, type AuthenticatedUser } from '../../../identity/public/index.js';
-import type { CustomerProfileView } from '../../application/results/customer-views.js';
+import { CustomerProfileView } from '../../application/results/customer-views.js';
 import { GetMyProfileUseCase } from '../../application/use-cases/get-my-profile.use-case.js';
 import { UpdateMyProfileUseCase } from '../../application/use-cases/update-my-profile.use-case.js';
 import { UpdateProfileRequestDto } from './dto/update-profile.request.dto.js';

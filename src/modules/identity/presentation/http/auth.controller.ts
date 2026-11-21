@@ -14,7 +14,7 @@ import { randomBytes } from 'node:crypto';
 import type { Request, Response } from 'express';
 import type { Env } from '../../../../infrastructure/config/env.schema.js';
 import type { AuthTokens } from '../../application/ports/token-service.port.js';
-import { toUserView, type UserView } from '../../application/results/user-view.js';
+import { toUserView, UserView } from '../../application/results/user-view.js';
 import { AuthTokenIssuer } from '../../application/services/auth-token-issuer.js';
 import { LoginUseCase } from '../../application/use-cases/login.use-case.js';
 import { LogoutUseCase } from '../../application/use-cases/logout.use-case.js';

@@ -1,6 +1,6 @@
 import type { DeliveryMethodCode } from '../../domain/delivery-method.js';
 
-export interface QuoteLineView {
+export class QuoteLineView {
   productId: string;
   name: string;
   unitPriceMinor: number;
@@ -9,7 +9,7 @@ export interface QuoteLineView {
   lineTotalMinor: number;
 }
 
-export interface QuoteView {
+export class QuoteView {
   items: QuoteLineView[];
   subtotalMinor: number;
   discountMinor: number;

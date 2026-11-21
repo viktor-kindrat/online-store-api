@@ -1,6 +1,6 @@
 import { Body, Controller, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import { Roles } from '../../../identity/public/index.js';
-import type { CategoryView } from '../../application/results/catalog-views.js';
+import { CategoryView } from '../../application/results/catalog-views.js';
 import { CreateCategoryUseCase } from '../../application/use-cases/create-category.use-case.js';
 import { UpdateCategoryUseCase } from '../../application/use-cases/update-category.use-case.js';
 import { CreateCategoryRequestDto } from './dto/create-category.request.dto.js';

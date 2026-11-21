@@ -10,7 +10,7 @@ import {
   Post,
 } from '@nestjs/common';
 import { Roles } from '../../../identity/public/index.js';
-import type { ProductView } from '../../application/results/catalog-views.js';
+import { ProductView } from '../../application/results/catalog-views.js';
 import { ArchiveProductUseCase } from '../../application/use-cases/archive-product.use-case.js';
 import { CreateProductUseCase } from '../../application/use-cases/create-product.use-case.js';
 import { UpdateProductUseCase } from '../../application/use-cases/update-product.use-case.js';

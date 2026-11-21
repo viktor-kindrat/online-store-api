@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import { Roles } from '../../../identity/public/index.js';
-import type { PromotionView } from '../../application/results/promotion-view.js';
+import { PromotionView } from '../../application/results/promotion-view.js';
 import { CreatePromotionUseCase } from '../../application/use-cases/create-promotion.use-case.js';
 import { ListPromotionsUseCase } from '../../application/use-cases/list-promotions.use-case.js';
 import { UpdatePromotionUseCase } from '../../application/use-cases/update-promotion.use-case.js';

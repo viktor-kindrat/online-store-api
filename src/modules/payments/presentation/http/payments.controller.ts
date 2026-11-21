@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { CurrentUser, type AuthenticatedUser } from '../../../identity/public/index.js';
 import { IdempotencyInterceptor } from '../../../../shared/idempotency/idempotency.interceptor.js';
-import type {
+import {
   PaymentInitiatedView,
   PaymentView,
 } from '../../application/results/payment-views.js';

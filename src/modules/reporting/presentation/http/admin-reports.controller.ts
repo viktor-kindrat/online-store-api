@@ -3,7 +3,7 @@ import { Roles } from '../../../identity/public/index.js';
 import { GetRevenueReportUseCase } from '../../application/use-cases/get-revenue-report.use-case.js';
 import { GetSalesByCategoryUseCase } from '../../application/use-cases/get-sales-by-category.use-case.js';
 import { GetTopProductsUseCase } from '../../application/use-cases/get-top-products.use-case.js';
-import type {
+import {
   RevenueReportView,
   SalesByCategoryView,
   TopProductView,

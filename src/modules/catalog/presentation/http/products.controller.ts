@@ -1,10 +1,9 @@
 import { Controller, Get, Param, ParseUUIDPipe, Query } from '@nestjs/common';
-import type { PaginatedResult } from '../../../../shared/application/pagination.js';
 import { Public } from '../../../identity/public/index.js';
-import type {
+import {
   ProductDetailView,
   ProductImageView,
-  ProductView,
+  ProductListResponse,
 } from '../../application/results/catalog-views.js';
 import { GetProductUseCase } from '../../application/use-cases/get-product.use-case.js';
 import { ListProductImagesUseCase } from '../../application/use-cases/list-product-images.use-case.js';
@@ -21,7 +20,7 @@ export class ProductsController {
 
   @Public()
   @Get()
-  list(@Query() query: ProductQueryDto): Promise<PaginatedResult<ProductView>> {
+  list(@Query() query: ProductQueryDto): Promise<ProductListResponse> {
     return this.listProducts.execute(query);
   }
 

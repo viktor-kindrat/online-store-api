@@ -1,6 +1,6 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { CurrentUser, type AuthenticatedUser } from '../../../identity/public/index.js';
-import type { QuoteView } from '../../application/results/quote-view.js';
+import { QuoteView } from '../../application/results/quote-view.js';
 import { QuoteCheckoutUseCase } from '../../application/use-cases/quote-checkout.use-case.js';
 import { QuoteCheckoutRequestDto } from './dto/quote-checkout.request.dto.js';
 

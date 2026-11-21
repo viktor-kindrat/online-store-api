@@ -11,7 +11,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Roles } from '../../../identity/public/index.js';
 import { InvalidProductImageError } from '../../domain/errors/invalid-product-image.error.js';
-import type { ProductImageView } from '../../application/results/catalog-views.js';
+import { ProductImageView } from '../../application/results/catalog-views.js';
 import { AddProductImageUseCase } from '../../application/use-cases/add-product-image.use-case.js';
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;

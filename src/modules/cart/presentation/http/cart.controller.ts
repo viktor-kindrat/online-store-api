@@ -9,7 +9,7 @@ import {
   Post,
 } from '@nestjs/common';
 import { CurrentUser, type AuthenticatedUser } from '../../../identity/public/index.js';
-import type { CartView } from '../../application/results/cart-view.js';
+import { CartView } from '../../application/results/cart-view.js';
 import { AddCartItemUseCase } from '../../application/use-cases/add-cart-item.use-case.js';
 import { ChangeCartItemQuantityUseCase } from '../../application/use-cases/change-cart-item-quantity.use-case.js';
 import { GetCartUseCase } from '../../application/use-cases/get-cart.use-case.js';

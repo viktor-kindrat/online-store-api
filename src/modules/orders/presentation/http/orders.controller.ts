@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { CurrentUser, type AuthenticatedUser } from '../../../identity/public/index.js';
 import { IdempotencyInterceptor } from '../../../../shared/idempotency/idempotency.interceptor.js';
-import type { OrderView } from '../../application/results/order-view.js';
+import { OrderView } from '../../application/results/order-view.js';
 import { CancelOrderUseCase } from '../../application/use-cases/cancel-order.use-case.js';
 import { GetOrderUseCase } from '../../application/use-cases/get-order.use-case.js';
 import { ListOrdersUseCase } from '../../application/use-cases/list-orders.use-case.js';

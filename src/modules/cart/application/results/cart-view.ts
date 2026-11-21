@@ -1,4 +1,4 @@
-export interface CartItemView {
+export class CartItemView {
   id: string;
   productId: string;
   name: string;
@@ -7,7 +7,7 @@ export interface CartItemView {
   lineTotalMinor: number;
 }
 
-export interface CartView {
+export class CartView {
   id: string;
   items: CartItemView[];
   subtotalMinor: number;

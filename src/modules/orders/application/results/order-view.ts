@@ -3,7 +3,7 @@ import type { DeliveryMethodCode } from '../../domain/delivery-method.js';
 import type { OrderStatus } from '../../domain/order-status.js';
 import type { ShippingAddress } from '../../domain/shipping-address.js';
 
-export interface OrderItemView {
+export class OrderItemView {
   productId: string;
   productName: string;
   unitPriceMinor: number;
@@ -11,7 +11,7 @@ export interface OrderItemView {
   lineTotalMinor: number;
 }
 
-export interface OrderView {
+export class OrderView {
   id: string;
   status: OrderStatus;
   subtotalMinor: number;

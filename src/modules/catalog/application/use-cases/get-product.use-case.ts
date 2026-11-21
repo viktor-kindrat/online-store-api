@@ -27,9 +27,15 @@ export class GetProductUseCase {
     if (!product || product.status !== 'ACTIVE') {
       throw new ProductNotFoundError();
     }
+    const view = toProductView(product);
     const images = await this.images.findByProduct(id);
     return {
-      ...toProductView(product),
+      id: view.id,
+      categoryId: view.categoryId,
+      name: view.name,
+      description: view.description,
+      priceMinor: view.priceMinor,
+      status: view.status,
       images: images.map(toProductImageView),
     };
   }

@@ -1,7 +1,7 @@
 import type { UserAccount } from '../../domain/entities/user-account.js';
 import type { UserRole } from '../../domain/user-role.js';
 
-export interface UserView {
+export class UserView {
   id: string;
   email: string;
   role: UserRole;

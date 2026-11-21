@@ -11,7 +11,7 @@ import {
   Post,
 } from '@nestjs/common';
 import { CurrentUser, type AuthenticatedUser } from '../../../identity/public/index.js';
-import type { CustomerAddressView } from '../../application/results/customer-views.js';
+import { CustomerAddressView } from '../../application/results/customer-views.js';
 import { AddMyAddressUseCase } from '../../application/use-cases/add-my-address.use-case.js';
 import { ListMyAddressesUseCase } from '../../application/use-cases/list-my-addresses.use-case.js';
 import { RemoveMyAddressUseCase } from '../../application/use-cases/remove-my-address.use-case.js';

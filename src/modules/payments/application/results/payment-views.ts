@@ -1,18 +1,18 @@
 import type { Payment } from '../../domain/entities/payment.js';
 import type { PaymentStatus } from '../../domain/payment-status.js';
 
-export interface PaymentInitiatedView {
+export class PaymentInitiatedView {
   paymentId: string;
   providerReference: string;
   redirectUrl: string;
 }
 
-export interface PaymentAttemptView {
+export class PaymentAttemptView {
   providerReference: string;
   status: PaymentStatus;
 }
 
-export interface PaymentView {
+export class PaymentView {
   id: string;
   orderId: string;
   amountMinor: number;

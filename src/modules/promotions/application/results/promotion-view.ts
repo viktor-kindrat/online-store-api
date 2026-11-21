@@ -1,7 +1,7 @@
 import type { Promotion } from '../../domain/entities/promotion.js';
 import type { DiscountType } from '../../domain/discount-type.js';
 
-export interface PromotionView {
+export class PromotionView {
   id: string;
   code: string;
   discountType: DiscountType;
