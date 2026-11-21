@@ -36,6 +36,12 @@ services:
       ADMIN_PASSWORD: admin12345
       CORS_ORIGIN: http://localhost:8080
       STORAGE_DIR: storage/uploads
+      PUBLIC_API_URL: http://localhost:8081
+      WEB_PUBLIC_URL: http://localhost:8080
+      PAYMENT_PROVIDER: mock
+      WAYFORPAY_MERCHANT_ACCOUNT: ""
+      WAYFORPAY_SECRET_KEY: ""
+      WAYFORPAY_DOMAIN: localhost
     ports:
       - "8081:3000"
 
