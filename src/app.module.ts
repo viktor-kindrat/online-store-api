@@ -9,6 +9,7 @@ import { DatabaseModule } from './infrastructure/database/database.module.js';
 import { HealthModule } from './health/health.module.js';
 import { CartModule } from './modules/cart/cart.module.js';
 import { CatalogModule } from './modules/catalog/catalog.module.js';
+import { CustomersModule } from './modules/customers/customers.module.js';
 import { IdentityModule } from './modules/identity/identity.module.js';
 import { InventoryModule } from './modules/inventory/inventory.module.js';
 import { OrdersModule } from './modules/orders/orders.module.js';
@@ -32,6 +33,7 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
     SharedModule,
     HealthModule,
     IdentityModule,
+    CustomersModule,
     CatalogModule,
     InventoryModule,
     CartModule,
