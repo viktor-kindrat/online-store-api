@@ -19,6 +19,7 @@ export const envSchema = z.object({
   JWT_ACCESS_SECRET: z.string().min(16),
   JWT_ACCESS_TTL: z.string().min(1).default('900s'),
   REFRESH_TTL_DAYS: z.coerce.number().int().positive().default(7),
+  STORAGE_DIR: z.string().min(1).default('storage/uploads'),
 });
 
 export type Env = z.infer<typeof envSchema>;
