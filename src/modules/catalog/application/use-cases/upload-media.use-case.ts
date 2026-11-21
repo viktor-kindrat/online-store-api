@@ -7,6 +7,10 @@ import {
   MEDIA_ASSET_REPOSITORY,
   type MediaAssetRepository,
 } from '../ports/media-asset.repository.port.js';
+import {
+  MEDIA_URL_RESOLVER,
+  type MediaUrlResolver,
+} from '../ports/media-url.resolver.port.js';
 import { STORAGE_PORT, type StoragePort } from '../ports/storage.port.js';
 import { MediaAssetView } from '../results/catalog-views.js';
 
@@ -30,6 +34,8 @@ export class UploadMediaUseCase {
     @Inject(MEDIA_ASSET_REPOSITORY)
     private readonly assets: MediaAssetRepository,
     @Inject(STORAGE_PORT) private readonly storage: StoragePort,
+    @Inject(MEDIA_URL_RESOLVER)
+    private readonly mediaUrls: MediaUrlResolver,
   ) {}
 
   async execute(command: UploadMediaCommand): Promise<MediaAssetView> {
@@ -41,7 +47,13 @@ export class UploadMediaUseCase {
     await this.storage.put(objectKey, command.buffer, command.contentType);
     const asset = MediaAsset.create(objectKey, command.contentType);
     await this.assets.save(asset);
-    return { id: asset.id, url: `/api/v1/media/assets/${asset.id}` };
+    return {
+      id: asset.id,
+      url: this.mediaUrls.resolve(
+        asset.objectKey,
+        `/api/v1/media/assets/${asset.id}`,
+      ),
+    };
   }
 
   private extensionFor(originalName: string, contentType: string): string {

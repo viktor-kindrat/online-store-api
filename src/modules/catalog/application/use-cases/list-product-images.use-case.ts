@@ -7,7 +7,11 @@ import {
   PRODUCT_IMAGE_REPOSITORY,
   type ProductImageRepository,
 } from '../ports/product-image.repository.port.js';
-import { toProductImageView, type ProductImageView } from '../results/catalog-views.js';
+import {
+  mediaUrlForImage,
+  toProductImageView,
+  type ProductImageView,
+} from '../results/catalog-views.js';
 
 @Injectable()
 export class ListProductImagesUseCase {
@@ -21,7 +25,10 @@ export class ListProductImagesUseCase {
   async execute(productId: string): Promise<ProductImageView[]> {
     const images = await this.images.findByProduct(productId);
     return images.map((image) =>
-      toProductImageView(image, this.mediaUrls.resolve(image)),
+      toProductImageView(
+        image,
+        this.mediaUrls.resolve(image.objectKey, mediaUrlForImage(image.id)),
+      ),
     );
   }
 }

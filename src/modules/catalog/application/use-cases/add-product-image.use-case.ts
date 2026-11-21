@@ -17,7 +17,11 @@ import {
   type ProductImageRepository,
 } from '../ports/product-image.repository.port.js';
 import { STORAGE_PORT, type StoragePort } from '../ports/storage.port.js';
-import { toProductImageView, type ProductImageView } from '../results/catalog-views.js';
+import {
+  mediaUrlForImage,
+  toProductImageView,
+  type ProductImageView,
+} from '../results/catalog-views.js';
 
 const EXTENSION_BY_TYPE: Record<string, string> = {
   'image/png': '.png',
@@ -58,7 +62,10 @@ export class AddProductImageUseCase {
     const sortOrder = await this.images.countByProduct(command.productId);
     const image = ProductImage.create(command.productId, objectKey, sortOrder);
     await this.images.save(image);
-    return toProductImageView(image, this.mediaUrls.resolve(image));
+    return toProductImageView(
+      image,
+      this.mediaUrls.resolve(image.objectKey, mediaUrlForImage(image.id)),
+    );
   }
 
   private extensionFor(originalName: string, contentType: string): string {

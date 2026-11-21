@@ -21,6 +21,7 @@ import {
   type ProductRepository,
 } from '../ports/product.repository.port.js';
 import {
+  mediaUrlForImage,
   toProductAttributeView,
   toProductImageView,
   toProductView,
@@ -47,7 +48,10 @@ export class GetProductUseCase {
     }
     const images = await this.images.findByProduct(id);
     const imageViews = images.map((image) =>
-      toProductImageView(image, this.mediaUrls.resolve(image)),
+      toProductImageView(
+        image,
+        this.mediaUrls.resolve(image.objectKey, mediaUrlForImage(image.id)),
+      ),
     );
     const view = toProductView(product, imageViews[0]?.url ?? null);
     const attributes = await this.attributes.findByProduct(id);

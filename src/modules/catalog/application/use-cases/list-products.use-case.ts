@@ -16,7 +16,11 @@ import {
   type ProductListFilter,
   type ProductRepository,
 } from '../ports/product.repository.port.js';
-import { toProductView, type ProductView } from '../results/catalog-views.js';
+import {
+  mediaUrlForImage,
+  toProductView,
+  type ProductView,
+} from '../results/catalog-views.js';
 
 export interface ListProductsQuery {
   page: number;
@@ -63,7 +67,9 @@ export class ListProductsUseCase {
       const image = primaryImages.get(product.id);
       return toProductView(
         product,
-        image ? this.mediaUrls.resolve(image) : null,
+        image
+          ? this.mediaUrls.resolve(image.objectKey, mediaUrlForImage(image.id))
+          : null,
       );
     });
     return buildPaginatedResult(items, page.total, query.page, query.limit);
