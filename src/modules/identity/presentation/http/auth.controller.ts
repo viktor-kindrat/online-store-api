@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Post,
@@ -8,6 +9,8 @@ import {
   Res,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Throttle } from '@nestjs/throttler';
+import { randomBytes } from 'node:crypto';
 import type { Request, Response } from 'express';
 import type { Env } from '../../../../infrastructure/config/env.schema.js';
 import type { AuthTokens } from '../../application/ports/token-service.port.js';
@@ -17,14 +20,21 @@ import { LoginUseCase } from '../../application/use-cases/login.use-case.js';
 import { LogoutUseCase } from '../../application/use-cases/logout.use-case.js';
 import { RefreshSessionUseCase } from '../../application/use-cases/refresh-session.use-case.js';
 import { RegisterUserUseCase } from '../../application/use-cases/register-user.use-case.js';
-import { ACCESS_TOKEN_COOKIE, REFRESH_TOKEN_COOKIE } from './cookie.constants.js';
+import {
+  ACCESS_TOKEN_COOKIE,
+  CSRF_TOKEN_COOKIE,
+  REFRESH_TOKEN_COOKIE,
+} from './cookie.constants.js';
 import { Public } from './decorators/public.decorator.js';
 import { LoginRequestDto } from './dto/login.request.dto.js';
 import { RegisterRequestDto } from './dto/register.request.dto.js';
 
 const ACCESS_COOKIE_MAX_AGE_MS = 15 * 60 * 1000;
 const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
+const CSRF_TOKEN_BYTES = 32;
+const AUTH_RATE_LIMIT = { default: { limit: 10, ttl: 60000 } };
 
+@Throttle(AUTH_RATE_LIMIT)
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -86,6 +96,24 @@ export class AuthController {
     });
     response.clearCookie(ACCESS_TOKEN_COOKIE, { path: '/' });
     response.clearCookie(REFRESH_TOKEN_COOKIE, { path: '/' });
+    response.clearCookie(CSRF_TOKEN_COOKIE, { path: '/' });
+  }
+
+  @Public()
+  @Get('csrf')
+  csrf(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ): { csrfToken: string } {
+    const cookies = request.cookies as
+      | Record<string, string | undefined>
+      | undefined;
+    const existing = cookies?.[CSRF_TOKEN_COOKIE];
+    const csrfToken = existing ?? randomBytes(CSRF_TOKEN_BYTES).toString('hex');
+    if (!existing) {
+      this.setCsrfCookie(response, csrfToken);
+    }
+    return { csrfToken };
   }
 
   private readRefreshToken(request: Request): string | undefined {
@@ -113,6 +141,20 @@ export class AuthController {
       sameSite: 'lax',
       path: '/',
       maxAge: refreshMaxAge,
+    });
+    this.setCsrfCookie(response, randomBytes(CSRF_TOKEN_BYTES).toString('hex'));
+  }
+
+  private setCsrfCookie(response: Response, token: string): void {
+    const secure = this.config.get('NODE_ENV', { infer: true }) === 'production';
+    response.cookie(CSRF_TOKEN_COOKIE, token, {
+      httpOnly: false,
+      secure,
+      sameSite: 'lax',
+      path: '/',
+      maxAge:
+        this.config.get('REFRESH_TTL_DAYS', { infer: true }) *
+        MILLISECONDS_PER_DAY,
     });
   }
 }

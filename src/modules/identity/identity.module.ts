@@ -20,6 +20,7 @@ import { UserAccountOrmEntity } from './infrastructure/persistence/user-account.
 import { BcryptPasswordHasher } from './infrastructure/security/bcrypt-password-hasher.js';
 import { JwtTokenService } from './infrastructure/security/jwt-token.service.js';
 import { AuthController } from './presentation/http/auth.controller.js';
+import { CsrfGuard } from './presentation/http/guards/csrf.guard.js';
 import { JwtAuthGuard } from './presentation/http/guards/jwt-auth.guard.js';
 import { RolesGuard } from './presentation/http/guards/roles.guard.js';
 
@@ -51,6 +52,7 @@ import { RolesGuard } from './presentation/http/guards/roles.guard.js';
     { provide: TOKEN_SERVICE, useClass: JwtTokenService },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
+    { provide: APP_GUARD, useClass: CsrfGuard },
   ],
 })
 export class IdentityModule {}
