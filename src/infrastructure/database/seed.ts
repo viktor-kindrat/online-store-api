@@ -21,6 +21,13 @@ const s3 =
     ? new S3Client({ region: process.env.AWS_REGION ?? 'eu-central-1' })
     : null;
 
+const CONTENT_TYPE_BY_EXT: Record<string, string> = {
+  webp: 'image/webp',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  png: 'image/png',
+};
+
 async function putObject(
   objectKey: string,
   body: Buffer,
@@ -58,38 +65,8 @@ function escapeXml(value: string): string {
   );
 }
 
-function wrapName(name: string): string[] {
-  if (name.length <= 20) {
-    return [name];
-  }
-  const words = name.split(' ');
-  const lines = ['', ''];
-  let index = 0;
-  for (const word of words) {
-    if (index === 0 && `${lines[0]} ${word}`.trim().length > 18) {
-      index = 1;
-    }
-    lines[index] = `${lines[index]} ${word}`.trim();
-  }
-  return lines.filter((line) => line.length > 0);
-}
-
-function tileSvg(
-  name: string,
-  label: string,
-  initial: string,
-  from: string,
-  to: string,
-): Buffer {
-  const lines = wrapName(name);
-  const nameText = lines
-    .map(
-      (line, i) =>
-        `<text x="320" y="${340 + i * 34}" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700" fill="#ffffff">${escapeXml(line)}</text>`,
-    )
-    .join('');
-  const labelY = 340 + lines.length * 34 + 10;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="640" viewBox="0 0 640 640"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${from}"/><stop offset="1" stop-color="${to}"/></linearGradient></defs><rect width="640" height="640" fill="url(#g)"/><text x="320" y="300" text-anchor="middle" font-family="Georgia, serif" font-size="230" font-weight="700" fill="#ffffff" opacity="0.12">${escapeXml(initial)}</text>${nameText}<text x="320" y="${labelY}" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" fill="#ffffff" opacity="0.85" letter-spacing="1">${escapeXml(label)}</text><text x="320" y="602" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="800" fill="#ffffff" opacity="0.9" letter-spacing="3">M&amp;H</text></svg>`;
+function fallbackSvg(name: string, label: string): Buffer {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="640" viewBox="0 0 640 640"><rect width="640" height="640" fill="#1f2937"/><text x="320" y="320" text-anchor="middle" font-family="Arial, sans-serif" font-size="26" font-weight="700" fill="#ffffff">${escapeXml(name)}</text><text x="320" y="356" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#ffffff" opacity="0.8">${escapeXml(label)}</text><text x="320" y="600" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="800" fill="#ffffff" letter-spacing="3">M&amp;H</text></svg>`;
   return Buffer.from(svg, 'utf8');
 }
 
@@ -98,682 +75,643 @@ interface SeedProduct {
   description: string;
   priceMinor: number;
   onHand: number;
+  image: string;
   attributes: { name: string; value: string }[];
 }
 
 interface SeedCategory {
   category: { name: string; slug: string };
-  initial: string;
-  from: string;
-  to: string;
   products: SeedProduct[];
-}
-
-function sized(value: string): { name: string; value: string } {
-  return { name: 'Розміри', value: value };
 }
 
 const CATALOG: SeedCategory[] = [
   {
-    category: { name: 'Футболки', slug: 'tshirts' },
-    initial: 'Ф',
-    from: '#1f2937',
-    to: '#4b5563',
+    category: { name: 'Сорочки та футболки', slug: 'shirts' },
     products: [
       {
-        name: 'Базова бавовняна футболка',
+        name: 'Сорочка в клітинку синьо-чорна',
         description:
-          '<p>М’яка футболка з <strong>100% органічної бавовни</strong>, прямий крій, щільний комір.</p>',
-        priceMinor: 49900,
-        onHand: 60,
+          '<p>Чоловіча сорочка у <strong>синьо-чорну клітинку</strong>, бавовна, класичний крій.</p>',
+        priceMinor: 123000,
+        onHand: 40,
+        image: 'mens-shirts-0.webp',
         attributes: [
-          { name: 'Матеріал', value: '100% бавовна' },
-          { name: 'Колір', value: 'Білий' },
-          sized('XS–XXL'),
+          { name: 'Матеріал', value: 'Бавовна' },
+          { name: 'Колір', value: 'Синьо-чорний' },
+          { name: 'Розміри', value: 'S–XXL' },
         ],
       },
       {
-        name: 'Футболка Oversize чорна',
+        name: 'Футболка чоловіча Aorus',
         description:
-          '<p>Вільний <strong>oversize</strong>-силует, приспущене плече, щільний джерсі 220 г/м².</p>',
-        priceMinor: 64900,
-        onHand: 45,
+          '<p>М’яка бавовняна <strong>футболка</strong> з лаконічним принтом.</p>',
+        priceMinor: 102500,
+        onHand: 55,
+        image: 'mens-shirts-1.webp',
         attributes: [
           { name: 'Матеріал', value: 'Бавовна 100%' },
           { name: 'Колір', value: 'Чорний' },
-          sized('S–XL'),
+          { name: 'Розміри', value: 'S–XL' },
         ],
       },
       {
-        name: 'Футболка з принтом Graphic',
+        name: 'Сорочка в клітинку плед',
         description:
-          '<p>Бавовняна футболка з <em>авторським принтом</em>, стійким до прання.</p>',
-        priceMinor: 69900,
-        onHand: 38,
-        attributes: [
-          { name: 'Матеріал', value: 'Бавовна 95%, еластан 5%' },
-          { name: 'Колір', value: 'Графітовий' },
-          sized('S–XL'),
-        ],
-      },
-      {
-        name: 'Поло класичне',
-        description:
-          '<p>Сорочка-поло <strong>піке</strong> з коротким рукавом, ґудзикова планка.</p>',
-        priceMinor: 79900,
-        onHand: 40,
-        attributes: [
-          { name: 'Матеріал', value: 'Бавовна піке' },
-          { name: 'Колір', value: 'Темно-синій' },
-          sized('S–XXL'),
-        ],
-      },
-      {
-        name: 'Лонгслів базовий',
-        description:
-          '<p>Футболка з довгим рукавом, м’який еластичний трикотаж, на кожен день.</p>',
-        priceMinor: 59900,
-        onHand: 50,
-        attributes: [
-          { name: 'Матеріал', value: 'Бавовна 92%, еластан 8%' },
-          { name: 'Колір', value: 'Сірий меланж' },
-          sized('XS–XL'),
-        ],
-      },
-      {
-        name: 'Футболка жіноча приталена',
-        description:
-          '<p>Приталений крій, глибокий виріз, ніжний <strong>модал</strong>-трикотаж.</p>',
-        priceMinor: 54900,
-        onHand: 42,
-        attributes: [
-          { name: 'Матеріал', value: 'Модал, бавовна' },
-          { name: 'Колір', value: 'Пудровий' },
-          sized('XS–L'),
-        ],
-      },
-      {
-        name: 'Тільник смугастий',
-        description:
-          '<p>Класичний <em>тільник</em> у морську смужку, щільний трикотаж.</p>',
-        priceMinor: 62900,
-        onHand: 33,
-        attributes: [
-          { name: 'Матеріал', value: 'Бавовна 100%' },
-          { name: 'Колір', value: 'Синьо-білий' },
-          sized('S–XL'),
-        ],
-      },
-    ],
-  },
-  {
-    category: { name: 'Сорочки', slug: 'shirts' },
-    initial: 'С',
-    from: '#0f766e',
-    to: '#14b8a6',
-    products: [
-      {
-        name: 'Класична біла сорочка',
-        description:
-          '<p>Офісна сорочка прямого крою з <strong>бавовни попліну</strong>, не мнеться.</p>',
-        priceMinor: 109900,
+          '<p>Сорочка у <em>картатий візерунок</em>, щільна тканина, зручний фіт.</p>',
+        priceMinor: 143500,
         onHand: 35,
-        attributes: [
-          { name: 'Матеріал', value: 'Бавовна поплін' },
-          { name: 'Колір', value: 'Білий' },
-          sized('38–46'),
-        ],
-      },
-      {
-        name: 'Сорочка в клітинку',
-        description:
-          '<p>Casual-сорочка у <em>клітинку</em>, нагрудні кишені, зручний фіт.</p>',
-        priceMinor: 99900,
-        onHand: 30,
+        image: 'mens-shirts-2.webp',
         attributes: [
           { name: 'Матеріал', value: 'Бавовна, фланель' },
-          { name: 'Колір', value: 'Червоно-чорна' },
-          sized('S–XXL'),
+          { name: 'Колір', value: 'Різнокольорова' },
+          { name: 'Розміри', value: 'S–XXL' },
         ],
       },
       {
-        name: 'Сорочка лляна',
+        name: 'Сорочка з коротким рукавом',
         description:
-          '<p>Легка <strong>лляна</strong> сорочка для спеки, вільний крій.</p>',
-        priceMinor: 119900,
-        onHand: 28,
-        attributes: [
-          { name: 'Матеріал', value: 'Льон 100%' },
-          { name: 'Колір', value: 'Бежевий' },
-          sized('S–XL'),
-        ],
-      },
-      {
-        name: 'Сорочка джинсова',
-        description:
-          '<p>Щільна <strong>денім</strong>-сорочка з кнопками, універсальний стиль.</p>',
-        priceMinor: 134900,
-        onHand: 26,
-        attributes: [
-          { name: 'Матеріал', value: 'Денім, бавовна' },
-          { name: 'Колір', value: 'Синій' },
-          sized('S–XL'),
-        ],
-      },
-      {
-        name: 'Сорочка oversize жіноча',
-        description:
-          '<p>Подовжена сорочка вільного крою, можна носити як сукню.</p>',
-        priceMinor: 104900,
-        onHand: 31,
-        attributes: [
-          { name: 'Матеріал', value: 'Бавовна, віскоза' },
-          { name: 'Колір', value: 'Блакитний' },
-          sized('XS–L'),
-        ],
-      },
-      {
-        name: 'Сорочка-футболка (overshirt)',
-        description:
-          '<p>Тепла <em>overshirt</em> на межі сорочки й куртки, для міжсезоння.</p>',
-        priceMinor: 159900,
-        onHand: 22,
-        attributes: [
-          { name: 'Матеріал', value: 'Бавовна, поліестер' },
-          { name: 'Колір', value: 'Хакі' },
-          sized('M–XXL'),
-        ],
-      },
-    ],
-  },
-  {
-    category: { name: 'Худі та світшоти', slug: 'hoodies' },
-    initial: 'Х',
-    from: '#7c2d12',
-    to: '#ea580c',
-    products: [
-      {
-        name: 'Худі базове на флісі',
-        description:
-          '<p>Тепле худі з капюшоном, <strong>начіс-фліс</strong> зсередини, кишеня-кенгуру.</p>',
-        priceMinor: 149900,
+          '<p>Легка <strong>сорочка з коротким рукавом</strong> для теплої погоди.</p>',
+        priceMinor: 82000,
         onHand: 48,
+        image: 'mens-shirts-3.webp',
         attributes: [
-          { name: 'Матеріал', value: 'Бавовна 80%, поліестер 20%' },
-          { name: 'Колір', value: 'Чорний' },
-          sized('XS–XXL'),
+          { name: 'Матеріал', value: 'Бавовна, льон' },
+          { name: 'Колір', value: 'Світлий' },
+          { name: 'Розміри', value: 'S–XL' },
         ],
       },
       {
-        name: 'Світшот без капюшона',
+        name: 'Сорочка картата класична',
         description:
-          '<p>Класичний світшот прямого крою, щільний <em>петльовий</em> трикотаж.</p>',
-        priceMinor: 129900,
-        onHand: 40,
+          '<p>Універсальна <em>картата сорочка</em>, пасує на щодень і в офіс.</p>',
+        priceMinor: 114800,
+        onHand: 42,
+        image: 'mens-shirts-4.webp',
         attributes: [
-          { name: 'Матеріал', value: 'Бавовна, поліестер' },
-          { name: 'Колір', value: 'Сірий' },
-          sized('S–XL'),
-        ],
-      },
-      {
-        name: 'Худі oversize',
-        description:
-          '<p>Вільний <strong>oversize</strong>-силует, приспущене плече, подвійний капюшон.</p>',
-        priceMinor: 169900,
-        onHand: 36,
-        attributes: [
-          { name: 'Матеріал', value: 'Бавовна 100%' },
-          { name: 'Колір', value: 'Молочний' },
-          sized('S–XL'),
-        ],
-      },
-      {
-        name: 'Зіп-худі на блискавці',
-        description:
-          '<p>Худі на <strong>блискавці</strong> з бічними кишенями, зручно вдягати.</p>',
-        priceMinor: 159900,
-        onHand: 34,
-        attributes: [
-          { name: 'Матеріал', value: 'Бавовна, еластан' },
-          { name: 'Колір', value: 'Темно-зелений' },
-          sized('S–XXL'),
-        ],
-      },
-      {
-        name: 'Світшот жіночий crop',
-        description:
-          '<p>Укорочений <em>crop</em>-світшот, м’який начіс, резинка знизу.</p>',
-        priceMinor: 119900,
-        onHand: 29,
-        attributes: [
-          { name: 'Матеріал', value: 'Бавовна, поліестер' },
-          { name: 'Колір', value: 'Лавандовий' },
-          sized('XS–L'),
-        ],
-      },
-      {
-        name: 'Худі з вишивкою M&H',
-        description:
-          '<p>Фірмове худі з <strong>вишитим логотипом</strong>, щільний фліс 320 г/м².</p>',
-        priceMinor: 189900,
-        onHand: 25,
-        attributes: [
-          { name: 'Матеріал', value: 'Бавовна 85%, поліестер 15%' },
-          { name: 'Колір', value: 'Бордовий' },
-          sized('S–XXL'),
-        ],
-      },
-    ],
-  },
-  {
-    category: { name: 'Штани та джинси', slug: 'pants' },
-    initial: 'Ш',
-    from: '#1e3a8a',
-    to: '#3b82f6',
-    products: [
-      {
-        name: 'Джинси прямі Regular',
-        description:
-          '<p>Класичні прямі джинси <strong>regular fit</strong> зі щільного деніму.</p>',
-        priceMinor: 179900,
-        onHand: 44,
-        attributes: [
-          { name: 'Матеріал', value: 'Денім, бавовна 98%, еластан 2%' },
-          { name: 'Колір', value: 'Темно-синій' },
-          sized('28–38'),
-        ],
-      },
-      {
-        name: 'Джинси Slim чорні',
-        description:
-          '<p>Звужені <em>slim</em>-джинси, тягнуться, добре тримають форму.</p>',
-        priceMinor: 184900,
-        onHand: 39,
-        attributes: [
-          { name: 'Матеріал', value: 'Бавовна, еластан' },
-          { name: 'Колір', value: 'Чорний' },
-          sized('28–36'),
-        ],
-      },
-      {
-        name: 'Карго-штани',
-        description:
-          '<p>Практичні <strong>карго</strong> з накладними кишенями, щільна тканина.</p>',
-        priceMinor: 164900,
-        onHand: 33,
-        attributes: [
-          { name: 'Матеріал', value: 'Бавовна 100%' },
-          { name: 'Колір', value: 'Хакі' },
-          sized('S–XXL'),
-        ],
-      },
-      {
-        name: 'Джогери спортивні',
-        description:
-          '<p>М’які <em>джогери</em> з манжетами й кулісою, для спорту та відпочинку.</p>',
-        priceMinor: 119900,
-        onHand: 52,
-        attributes: [
-          { name: 'Матеріал', value: 'Бавовна, поліестер' },
-          { name: 'Колір', value: 'Сірий меланж' },
-          sized('XS–XXL'),
-        ],
-      },
-      {
-        name: 'Чінос класичні',
-        description:
-          '<p>Елегантні <strong>чінос</strong> прямого крою, тримають стрілку.</p>',
-        priceMinor: 139900,
-        onHand: 36,
-        attributes: [
-          { name: 'Матеріал', value: 'Бавовна, еластан' },
-          { name: 'Колір', value: 'Бежевий' },
-          sized('30–38'),
-        ],
-      },
-      {
-        name: 'Джинси жіночі Mom',
-        description:
-          '<p>Трендові <em>mom</em>-джинси з високою посадкою, вільні на стегнах.</p>',
-        priceMinor: 169900,
-        onHand: 41,
-        attributes: [
-          { name: 'Матеріал', value: 'Денім 100%' },
-          { name: 'Колір', value: 'Світло-блакитний' },
-          sized('25–32'),
-        ],
-      },
-      {
-        name: 'Шорти джинсові',
-        description:
-          '<p>Літні джинсові шорти з підкотом, зручна середня посадка.</p>',
-        priceMinor: 94900,
-        onHand: 47,
-        attributes: [
-          { name: 'Матеріал', value: 'Денім, бавовна' },
-          { name: 'Колір', value: 'Синій' },
-          sized('S–XL'),
-        ],
-      },
-    ],
-  },
-  {
-    category: { name: 'Куртки та верхній одяг', slug: 'jackets' },
-    initial: 'К',
-    from: '#111827',
-    to: '#374151',
-    products: [
-      {
-        name: 'Бомбер класичний',
-        description:
-          '<p>Куртка-<strong>бомбер</strong> на блискавці з трикотажними манжетами.</p>',
-        priceMinor: 259900,
-        onHand: 24,
-        attributes: [
-          { name: 'Матеріал', value: 'Поліестер, підкладка' },
-          { name: 'Колір', value: 'Чорний' },
-          sized('S–XXL'),
-        ],
-      },
-      {
-        name: 'Джинсова куртка',
-        description:
-          '<p>Культова <em>денім</em>-куртка, щільна тканина, металеві ґудзики.</p>',
-        priceMinor: 229900,
-        onHand: 27,
-        attributes: [
-          { name: 'Матеріал', value: 'Денім 100%' },
-          { name: 'Колір', value: 'Синій' },
-          sized('S–XL'),
-        ],
-      },
-      {
-        name: 'Пуховик зимовий',
-        description:
-          '<p>Теплий <strong>пуховик</strong> з капюшоном, утеплювач до -20°C.</p>',
-        priceMinor: 449900,
-        onHand: 18,
-        attributes: [
-          { name: 'Матеріал', value: 'Поліестер, пух-перо' },
-          { name: 'Колір', value: 'Темно-синій' },
-          sized('S–XXL'),
-        ],
-      },
-      {
-        name: 'Вітровка легка',
-        description:
-          '<p>Складна <em>вітровка</em> з водовідштовхувальним покриттям.</p>',
-        priceMinor: 169900,
-        onHand: 34,
-        attributes: [
-          { name: 'Матеріал', value: 'Нейлон' },
-          { name: 'Колір', value: 'Оливковий' },
-          sized('S–XL'),
-        ],
-      },
-      {
-        name: 'Пальто вовняне',
-        description:
-          '<p>Елегантне <strong>вовняне</strong> пальто прямого крою, на підкладці.</p>',
-        priceMinor: 529900,
-        onHand: 15,
-        attributes: [
-          { name: 'Матеріал', value: 'Вовна 70%, поліестер 30%' },
-          { name: 'Колір', value: 'Кемел' },
-          sized('XS–L'),
-        ],
-      },
-      {
-        name: 'Тренч жіночий',
-        description:
-          '<p>Класичний <em>тренч</em> із поясом, двобортний, стильний силует.</p>',
-        priceMinor: 389900,
-        onHand: 19,
-        attributes: [
-          { name: 'Матеріал', value: 'Бавовна, поліестер' },
-          { name: 'Колір', value: 'Бежевий' },
-          sized('XS–L'),
+          { name: 'Матеріал', value: 'Бавовна' },
+          { name: 'Колір', value: 'Клітинка' },
+          { name: 'Розміри', value: 'S–XXL' },
         ],
       },
     ],
   },
   {
     category: { name: 'Сукні', slug: 'dresses' },
-    initial: 'Д',
-    from: '#9d174d',
-    to: '#ec4899',
     products: [
       {
-        name: 'Сукня-футболка',
+        name: 'Сукня блакитна',
         description:
-          '<p>Вільна трикотажна <strong>сукня-футболка</strong> на кожен день.</p>',
-        priceMinor: 109900,
+          '<p>Ніжна <strong>блакитна сукня</strong>, легка тканина, жіночний силует.</p>',
+        priceMinor: 123000,
         onHand: 30,
+        image: 'tops-0.webp',
+        attributes: [
+          { name: 'Матеріал', value: 'Віскоза' },
+          { name: 'Колір', value: 'Блакитний' },
+          { name: 'Розміри', value: 'XS–L' },
+        ],
+      },
+      {
+        name: 'Літня сукня',
+        description: '<p>Легка <em>літня сукня</em> вільного крою.</p>',
+        priceMinor: 82000,
+        onHand: 34,
+        image: 'tops-1.webp',
+        attributes: [
+          { name: 'Матеріал', value: 'Бавовна' },
+          { name: 'Колір', value: 'Світлий' },
+          { name: 'Розміри', value: 'XS–L' },
+        ],
+      },
+      {
+        name: 'Сукня сіра',
+        description:
+          '<p>Елегантна <strong>сіра сукня</strong>, мінімалістичний дизайн.</p>',
+        priceMinor: 143500,
+        onHand: 26,
+        image: 'tops-2.webp',
+        attributes: [
+          { name: 'Матеріал', value: 'Поліестер, віскоза' },
+          { name: 'Колір', value: 'Сірий' },
+          { name: 'Розміри', value: 'XS–L' },
+        ],
+      },
+      {
+        name: 'Сукня коротка',
+        description: '<p>Трендова <em>коротка сукня</em> для яскравих виходів.</p>',
+        priceMinor: 102500,
+        onHand: 28,
+        image: 'tops-3.webp',
         attributes: [
           { name: 'Матеріал', value: 'Бавовна, еластан' },
-          { name: 'Колір', value: 'Чорний' },
-          sized('XS–L'),
+          { name: 'Колір', value: 'Світлий' },
+          { name: 'Розміри', value: 'XS–L' },
         ],
       },
       {
-        name: 'Сукня міді в рубчик',
+        name: 'Сукня в клітинку тартан',
         description:
-          '<p>Приталена сукня <em>міді</em> у рубчик, підкреслює силует.</p>',
-        priceMinor: 149900,
-        onHand: 26,
-        attributes: [
-          { name: 'Матеріал', value: 'Віскоза, еластан' },
-          { name: 'Колір', value: 'Смарагдовий' },
-          sized('XS–L'),
-        ],
-      },
-      {
-        name: 'Сукня лляна літня',
-        description:
-          '<p>Легка <strong>лляна</strong> сукня вільного крою для спекотних днів.</p>',
-        priceMinor: 169900,
+          '<p>Стильна сукня у <strong>тартан</strong>, акцент осіннього гардероба.</p>',
+        priceMinor: 163900,
         onHand: 22,
+        image: 'tops-4.webp',
         attributes: [
-          { name: 'Матеріал', value: 'Льон 100%' },
-          { name: 'Колір', value: 'Білий' },
-          sized('XS–L'),
+          { name: 'Матеріал', value: 'Вовна, поліестер' },
+          { name: 'Колір', value: 'Клітинка' },
+          { name: 'Розміри', value: 'XS–L' },
         ],
       },
       {
-        name: 'Сукня-сорочка',
+        name: 'Вечірня сукня чорна',
         description:
-          '<p>Універсальна <em>сукня-сорочка</em> з поясом і ґудзиками.</p>',
-        priceMinor: 159900,
-        onHand: 24,
-        attributes: [
-          { name: 'Матеріал', value: 'Бавовна, віскоза' },
-          { name: 'Колір', value: 'Блакитний' },
-          sized('XS–XL'),
-        ],
-      },
-      {
-        name: 'Вечірня сукня максі',
-        description:
-          '<p>Елегантна сукня <strong>максі</strong> з драпіруванням для особливих подій.</p>',
-        priceMinor: 289900,
+          '<p>Розкішна <strong>чорна вечірня сукня</strong> для особливих подій.</p>',
+        priceMinor: 533000,
         onHand: 14,
+        image: 'dresses-0.webp',
         attributes: [
-          { name: 'Матеріал', value: 'Поліестер, сатин' },
-          { name: 'Колір', value: 'Винний' },
-          sized('XS–L'),
+          { name: 'Матеріал', value: 'Сатин' },
+          { name: 'Колір', value: 'Чорний' },
+          { name: 'Розміри', value: 'XS–L' },
         ],
       },
       {
-        name: 'Сарафан джинсовий',
+        name: 'Сукня з корсетом і спідницею',
         description:
-          '<p>Молодіжний <em>джинсовий сарафан</em> з регульованими бретелями.</p>',
-        priceMinor: 134900,
-        onHand: 28,
+          '<p>Ефектна сукня з <em>корсетом</em> та пишною спідницею.</p>',
+        priceMinor: 369000,
+        onHand: 16,
+        image: 'dresses-1.webp',
         attributes: [
-          { name: 'Матеріал', value: 'Денім, бавовна' },
-          { name: 'Колір', value: 'Синій' },
-          sized('XS–L'),
+          { name: 'Матеріал', value: 'Еко-шкіра, текстиль' },
+          { name: 'Колір', value: 'Темний' },
+          { name: 'Розміри', value: 'XS–M' },
+        ],
+      },
+      {
+        name: 'Корсетна сукня з чорною спідницею',
+        description:
+          '<p>Корсетний верх і <strong>чорна спідниця</strong> — сміливий образ.</p>',
+        priceMinor: 328000,
+        onHand: 15,
+        image: 'dresses-2.webp',
+        attributes: [
+          { name: 'Матеріал', value: 'Текстиль' },
+          { name: 'Колір', value: 'Чорний' },
+          { name: 'Розміри', value: 'XS–M' },
+        ],
+      },
+      {
+        name: 'Сукня Pea повсякденна',
+        description: '<p>Зручна <em>повсякденна сукня</em> на кожен день.</p>',
+        priceMinor: 205000,
+        onHand: 24,
+        image: 'dresses-3.webp',
+        attributes: [
+          { name: 'Матеріал', value: 'Бавовна' },
+          { name: 'Колір', value: 'Світлий' },
+          { name: 'Розміри', value: 'XS–L' },
+        ],
+      },
+      {
+        name: 'Костюм Marni червоно-чорний',
+        description:
+          '<p>Дизайнерський <strong>костюм Marni</strong> у червоно-чорній гамі.</p>',
+        priceMinor: 738000,
+        onHand: 10,
+        image: 'dresses-4.webp',
+        attributes: [
+          { name: 'Бренд', value: 'Marni' },
+          { name: 'Колір', value: 'Червоно-чорний' },
+          { name: 'Розміри', value: 'XS–L' },
         ],
       },
     ],
   },
   {
-    category: { name: 'Взуття', slug: 'shoes' },
-    initial: 'В',
-    from: '#3f3f46',
-    to: '#71717a',
+    category: { name: 'Кросівки', slug: 'sneakers' },
     products: [
       {
-        name: 'Кросівки білі класичні',
+        name: 'Кросівки Nike Air Jordan 1',
         description:
-          '<p>Універсальні білі <strong>кросівки</strong> з мінімалістичним дизайном.</p>',
-        priceMinor: 249900,
-        onHand: 40,
+          '<p>Легендарні <strong>Nike Air Jordan 1</strong> у червоно-чорному кольорі.</p>',
+        priceMinor: 615000,
+        onHand: 25,
+        image: 'mens-shoes-0.webp',
         attributes: [
-          { name: 'Матеріал', value: 'Еко-шкіра, гума' },
-          { name: 'Колір', value: 'Білий' },
-          sized('36–45'),
+          { name: 'Бренд', value: 'Nike' },
+          { name: 'Колір', value: 'Червоно-чорний' },
+          { name: 'Розміри', value: '40–46' },
         ],
       },
       {
-        name: 'Кеди полотняні',
+        name: 'Бейсбольні шиповки Nike',
+        description: '<p>Спортивні <em>шиповки Nike</em> для активних тренувань.</p>',
+        priceMinor: 328000,
+        onHand: 20,
+        image: 'mens-shoes-1.webp',
+        attributes: [
+          { name: 'Бренд', value: 'Nike' },
+          { name: 'Колір', value: 'Чорний' },
+          { name: 'Розміри', value: '40–46' },
+        ],
+      },
+      {
+        name: 'Кросівки Puma Future Rider',
         description:
-          '<p>Легкі <em>кеди</em> з текстилю на вулканізованій підошві.</p>',
-        priceMinor: 139900,
-        onHand: 46,
+          '<p>Стильні <strong>Puma Future Rider</strong>, зручна амортизація.</p>',
+        priceMinor: 369000,
+        onHand: 28,
+        image: 'mens-shoes-2.webp',
+        attributes: [
+          { name: 'Бренд', value: 'Puma' },
+          { name: 'Колір', value: 'Різнокольорові' },
+          { name: 'Розміри', value: '40–46' },
+        ],
+      },
+      {
+        name: 'Кросівки Off-White червоні',
+        description: '<p>Яскраві спортивні <em>кросівки</em> в біло-червоній гамі.</p>',
+        priceMinor: 492000,
+        onHand: 18,
+        image: 'mens-shoes-3.webp',
         attributes: [
           { name: 'Матеріал', value: 'Текстиль, гума' },
-          { name: 'Колір', value: 'Чорний' },
-          sized('36–45'),
+          { name: 'Колір', value: 'Біло-червоний' },
+          { name: 'Розміри', value: '40–46' },
         ],
       },
       {
-        name: 'Черевики челсі',
-        description:
-          '<p>Стильні <strong>челсі</strong> з еластичними вставками, шкіра.</p>',
-        priceMinor: 349900,
-        onHand: 24,
+        name: 'Спортивні кросівки Off-White',
+        description: '<p>Легкі <strong>спортивні кросівки</strong> на щодень.</p>',
+        priceMinor: 451000,
+        onHand: 22,
+        image: 'mens-shoes-4.webp',
         attributes: [
-          { name: 'Матеріал', value: 'Натуральна шкіра' },
-          { name: 'Колір', value: 'Коричневий' },
-          sized('39–45'),
-        ],
-      },
-      {
-        name: 'Кросівки бігові',
-        description:
-          '<p>Легкі <em>бігові</em> кросівки з амортизацією та дихаючим верхом.</p>',
-        priceMinor: 299900,
-        onHand: 32,
-        attributes: [
-          { name: 'Матеріал', value: 'Сітка, піна EVA' },
-          { name: 'Колір', value: 'Сіро-помаранчевий' },
-          sized('38–46'),
-        ],
-      },
-      {
-        name: 'Лофери замшеві',
-        description:
-          '<p>Елегантні <strong>лофери</strong> із замші, зручна колодка.</p>',
-        priceMinor: 319900,
-        onHand: 20,
-        attributes: [
-          { name: 'Матеріал', value: 'Замша' },
-          { name: 'Колір', value: 'Темно-синій' },
-          sized('39–44'),
-        ],
-      },
-      {
-        name: 'Чоботи зимові',
-        description:
-          '<p>Теплі <em>зимові</em> чоботи з хутряною підкладкою, нековзна підошва.</p>',
-        priceMinor: 429900,
-        onHand: 17,
-        attributes: [
-          { name: 'Матеріал', value: 'Шкіра, хутро' },
-          { name: 'Колір', value: 'Чорний' },
-          sized('36–41'),
+          { name: 'Матеріал', value: 'Сітка, гума' },
+          { name: 'Колір', value: 'Білий' },
+          { name: 'Розміри', value: '40–46' },
         ],
       },
     ],
   },
   {
-    category: { name: 'Аксесуари', slug: 'accessories' },
-    initial: 'А',
-    from: '#854d0e',
-    to: '#d97706',
+    category: { name: 'Жіноче взуття', slug: 'womens-shoes' },
     products: [
       {
-        name: 'Шкіряний ремінь',
-        description:
-          '<p>Класичний <strong>ремінь</strong> зі справжньої шкіри з металевою пряжкою.</p>',
-        priceMinor: 79900,
-        onHand: 55,
+        name: 'Капці чорно-коричневі',
+        description: '<p>Домашні <strong>капці</strong>, м’які й теплі.</p>',
+        priceMinor: 82000,
+        onHand: 44,
+        image: 'womens-shoes-0.webp',
         attributes: [
+          { name: 'Матеріал', value: 'Текстиль' },
+          { name: 'Колір', value: 'Чорно-коричневий' },
+          { name: 'Розміри', value: '36–41' },
+        ],
+      },
+      {
+        name: 'Туфлі на підборах Calvin Klein',
+        description:
+          '<p>Елегантні <strong>туфлі Calvin Klein</strong> на підборах.</p>',
+        priceMinor: 328000,
+        onHand: 20,
+        image: 'womens-shoes-1.webp',
+        attributes: [
+          { name: 'Бренд', value: 'Calvin Klein' },
+          { name: 'Колір', value: 'Чорний' },
+          { name: 'Розміри', value: '36–41' },
+        ],
+      },
+      {
+        name: 'Золотисті туфлі',
+        description: '<p>Святкові <em>золотисті туфлі</em> для особливих подій.</p>',
+        priceMinor: 205000,
+        onHand: 18,
+        image: 'womens-shoes-2.webp',
+        attributes: [
+          { name: 'Матеріал', value: 'Еко-шкіра' },
+          { name: 'Колір', value: 'Золотистий' },
+          { name: 'Розміри', value: '36–41' },
+        ],
+      },
+      {
+        name: 'Туфлі Pampi',
+        description: '<p>Комфортні <strong>туфлі</strong> для щоденного носіння.</p>',
+        priceMinor: 123000,
+        onHand: 30,
+        image: 'womens-shoes-3.webp',
+        attributes: [
+          { name: 'Матеріал', value: 'Еко-шкіра' },
+          { name: 'Колір', value: 'Світлий' },
+          { name: 'Розміри', value: '36–41' },
+        ],
+      },
+      {
+        name: 'Червоні туфлі',
+        description: '<p>Яскраві <em>червоні туфлі</em> — акцент образу.</p>',
+        priceMinor: 143500,
+        onHand: 24,
+        image: 'womens-shoes-4.webp',
+        attributes: [
+          { name: 'Матеріал', value: 'Еко-шкіра' },
+          { name: 'Колір', value: 'Червоний' },
+          { name: 'Розміри', value: '36–41' },
+        ],
+      },
+    ],
+  },
+  {
+    category: { name: 'Сумки', slug: 'bags' },
+    products: [
+      {
+        name: 'Синя жіноча сумка',
+        description: '<p>Містка <strong>жіноча сумка</strong> насиченого синього кольору.</p>',
+        priceMinor: 205000,
+        onHand: 26,
+        image: 'bags-0.webp',
+        attributes: [
+          { name: 'Матеріал', value: 'Еко-шкіра' },
+          { name: 'Колір', value: 'Синій' },
+          { name: 'Тип', value: 'Через плече' },
+        ],
+      },
+      {
+        name: 'Шкіряна сумка Heshe',
+        description: '<p>Елегантна <strong>шкіряна сумка Heshe</strong>.</p>',
+        priceMinor: 533000,
+        onHand: 18,
+        image: 'bags-1.webp',
+        attributes: [
+          { name: 'Бренд', value: 'Heshe' },
           { name: 'Матеріал', value: 'Натуральна шкіра' },
           { name: 'Колір', value: 'Коричневий' },
-          sized('95–120 см'),
         ],
       },
       {
-        name: 'Шапка-біні',
-        description:
-          '<p>М’яка в’язана <em>біні</em> дрібної в’язки, тримає тепло.</p>',
-        priceMinor: 49900,
-        onHand: 60,
+        name: 'Сумка Prada',
+        description: '<p>Преміальна <strong>сумка Prada</strong> — статусний аксесуар.</p>',
+        priceMinor: 2460000,
+        onHand: 8,
+        image: 'bags-2.webp',
         attributes: [
-          { name: 'Матеріал', value: 'Акрил, вовна' },
-          { name: 'Колір', value: 'Сірий' },
-          { name: 'Розмір', value: 'Універсальний' },
+          { name: 'Бренд', value: 'Prada' },
+          { name: 'Матеріал', value: 'Натуральна шкіра' },
+          { name: 'Колір', value: 'Класичний' },
         ],
       },
       {
-        name: 'Шарф вовняний',
-        description:
-          '<p>Теплий <strong>вовняний</strong> шарф великої в’язки.</p>',
-        priceMinor: 89900,
-        onHand: 44,
-        attributes: [
-          { name: 'Матеріал', value: 'Вовна 50%, акрил 50%' },
-          { name: 'Колір', value: 'Бордовий' },
-          { name: 'Розмір', value: '180×30 см' },
-        ],
-      },
-      {
-        name: 'Рюкзак міський',
-        description:
-          '<p>Місткий <em>рюкзак</em> з відділенням для ноутбука, водовідштовхувач.</p>',
-        priceMinor: 199900,
+        name: 'Рюкзак з еко-шкіри білий',
+        description: '<p>Міський <em>білий рюкзак</em> з еко-шкіри.</p>',
+        priceMinor: 164000,
         onHand: 30,
+        image: 'bags-3.webp',
         attributes: [
-          { name: 'Матеріал', value: 'Поліестер' },
+          { name: 'Матеріал', value: 'Еко-шкіра' },
+          { name: 'Колір', value: 'Білий' },
+          { name: 'Тип', value: 'Рюкзак' },
+        ],
+      },
+      {
+        name: 'Чорна жіноча сумка',
+        description: '<p>Класична <strong>чорна жіноча сумка</strong> на кожен день.</p>',
+        priceMinor: 246000,
+        onHand: 28,
+        image: 'bags-4.webp',
+        attributes: [
+          { name: 'Матеріал', value: 'Еко-шкіра' },
           { name: 'Колір', value: 'Чорний' },
-          { name: 'Об’єм', value: '20 л' },
+          { name: 'Тип', value: 'Через плече' },
+        ],
+      },
+    ],
+  },
+  {
+    category: { name: 'Окуляри', slug: 'sunglasses' },
+    products: [
+      {
+        name: 'Сонцезахисні окуляри чорні',
+        description: '<p>Стильні <strong>чорні сонцезахисні окуляри</strong>, UV400.</p>',
+        priceMinor: 123000,
+        onHand: 50,
+        image: 'sunglasses-0.webp',
+        attributes: [
+          { name: 'Захист', value: 'UV400' },
+          { name: 'Колір', value: 'Чорний' },
+          { name: 'Форма', value: 'Класична' },
         ],
       },
       {
-        name: 'Кепка-бейсболка',
-        description:
-          '<p>Бавовняна <strong>бейсболка</strong> з регулюванням ззаду.</p>',
-        priceMinor: 59900,
-        onHand: 58,
+        name: 'Класичні сонцезахисні окуляри',
+        description: '<p>Універсальні <em>класичні окуляри</em> від сонця.</p>',
+        priceMinor: 102500,
+        onHand: 55,
+        image: 'sunglasses-1.webp',
         attributes: [
-          { name: 'Матеріал', value: 'Бавовна 100%' },
-          { name: 'Колір', value: 'Бежевий' },
-          { name: 'Розмір', value: 'Універсальний' },
+          { name: 'Захист', value: 'UV400' },
+          { name: 'Колір', value: 'Чорний' },
+          { name: 'Форма', value: 'Вайфарер' },
         ],
       },
       {
-        name: 'Шкарпетки (набір 3 пари)',
-        description:
-          '<p>Набір бавовняних <em>шкарпеток</em>, 3 пари, посилена п’ята.</p>',
-        priceMinor: 39900,
-        onHand: 80,
+        name: 'Окуляри зелено-чорні',
+        description: '<p>Трендові <strong>зелено-чорні окуляри</strong>.</p>',
+        priceMinor: 143500,
+        onHand: 40,
+        image: 'sunglasses-2.webp',
         attributes: [
-          { name: 'Матеріал', value: 'Бавовна, еластан' },
-          { name: 'Колір', value: 'Асорті' },
-          sized('39–45'),
+          { name: 'Захист', value: 'UV400' },
+          { name: 'Колір', value: 'Зелено-чорний' },
+          { name: 'Форма', value: 'Авіатор' },
+        ],
+      },
+      {
+        name: 'Вечірні окуляри',
+        description: '<p>Акцентні <em>окуляри</em> для яскравих образів.</p>',
+        priceMinor: 82000,
+        onHand: 38,
+        image: 'sunglasses-3.webp',
+        attributes: [
+          { name: 'Колір', value: 'Різнокольорові' },
+          { name: 'Форма', value: 'Фешн' },
+          { name: 'Матеріал', value: 'Пластик' },
+        ],
+      },
+      {
+        name: 'Сонцезахисні окуляри',
+        description: '<p>Легкі <strong>сонцезахисні окуляри</strong> на щодень.</p>',
+        priceMinor: 94300,
+        onHand: 48,
+        image: 'sunglasses-4.webp',
+        attributes: [
+          { name: 'Захист', value: 'UV400' },
+          { name: 'Колір', value: 'Чорний' },
+          { name: 'Форма', value: 'Класична' },
+        ],
+      },
+    ],
+  },
+  {
+    category: { name: 'Прикраси', slug: 'jewellery' },
+    products: [
+      {
+        name: 'Сережки із зеленим кристалом',
+        description: '<p>Витончені <strong>сережки</strong> із зеленим кристалом.</p>',
+        priceMinor: 123000,
+        onHand: 35,
+        image: 'jewellery-0.webp',
+        attributes: [
+          { name: 'Матеріал', value: 'Сплав, кристал' },
+          { name: 'Колір', value: 'Зелений' },
+          { name: 'Тип', value: 'Сережки' },
+        ],
+      },
+      {
+        name: 'Зелені овальні сережки',
+        description: '<p>Елегантні <em>овальні сережки</em> зеленого відтінку.</p>',
+        priceMinor: 102500,
+        onHand: 40,
+        image: 'jewellery-1.webp',
+        attributes: [
+          { name: 'Матеріал', value: 'Сплав' },
+          { name: 'Колір', value: 'Зелений' },
+          { name: 'Тип', value: 'Сережки' },
+        ],
+      },
+      {
+        name: 'Тропічні сережки',
+        description: '<p>Яскраві <strong>тропічні сережки</strong> для літніх образів.</p>',
+        priceMinor: 82000,
+        onHand: 42,
+        image: 'jewellery-2.webp',
+        attributes: [
+          { name: 'Матеріал', value: 'Сплав, емаль' },
+          { name: 'Колір', value: 'Різнокольорові' },
+          { name: 'Тип', value: 'Сережки' },
+        ],
+      },
+    ],
+  },
+  {
+    category: { name: 'Годинники', slug: 'watches' },
+    products: [
+      {
+        name: 'Годинник на шкіряному ремінці',
+        description: '<p>Класичний <strong>годинник</strong> на коричневому шкіряному ремінці.</p>',
+        priceMinor: 369000,
+        onHand: 24,
+        image: 'watches-0.webp',
+        attributes: [
+          { name: 'Матеріал ремінця', value: 'Шкіра' },
+          { name: 'Колір', value: 'Коричневий' },
+          { name: 'Механізм', value: 'Кварцовий' },
+        ],
+      },
+      {
+        name: 'Longines Master Collection',
+        description: '<p>Елегантний швейцарський годинник <strong>Longines</strong>.</p>',
+        priceMinor: 6150000,
+        onHand: 6,
+        image: 'watches-1.webp',
+        attributes: [
+          { name: 'Бренд', value: 'Longines' },
+          { name: 'Механізм', value: 'Автоматичний' },
+          { name: 'Колір', value: 'Сталевий' },
+        ],
+      },
+      {
+        name: 'Rolex Cellini Date',
+        description: '<p>Розкішний <strong>Rolex Cellini</strong> з чорним циферблатом.</p>',
+        priceMinor: 36900000,
+        onHand: 3,
+        image: 'watches-2.webp',
+        attributes: [
+          { name: 'Бренд', value: 'Rolex' },
+          { name: 'Механізм', value: 'Автоматичний' },
+          { name: 'Колір', value: 'Чорний' },
+        ],
+      },
+      {
+        name: 'Rolex Cellini Moonphase',
+        description: '<p><strong>Rolex Cellini Moonphase</strong> — фаза місяця, елегантність.</p>',
+        priceMinor: 53300000,
+        onHand: 2,
+        image: 'watches-3.webp',
+        attributes: [
+          { name: 'Бренд', value: 'Rolex' },
+          { name: 'Механізм', value: 'Автоматичний' },
+          { name: 'Колір', value: 'Білий' },
+        ],
+      },
+      {
+        name: 'Rolex Datejust',
+        description: '<p>Легендарний <strong>Rolex Datejust</strong> зі сталі.</p>',
+        priceMinor: 45100000,
+        onHand: 3,
+        image: 'watches-4.webp',
+        attributes: [
+          { name: 'Бренд', value: 'Rolex' },
+          { name: 'Механізм', value: 'Автоматичний' },
+          { name: 'Колір', value: 'Сталевий' },
+        ],
+      },
+      {
+        name: 'Rolex Submariner',
+        description: '<p>Культовий дайверський <strong>Rolex Submariner</strong>.</p>',
+        priceMinor: 57400000,
+        onHand: 2,
+        image: 'watches-5.webp',
+        attributes: [
+          { name: 'Бренд', value: 'Rolex' },
+          { name: 'Механізм', value: 'Автоматичний' },
+          { name: 'Водозахист', value: '300 м' },
+        ],
+      },
+      {
+        name: 'IWC Ingenieur Automatic',
+        description: '<p>Інженерна класика <strong>IWC Ingenieur</strong> зі сталі.</p>',
+        priceMinor: 20500000,
+        onHand: 4,
+        image: 'watches-6.webp',
+        attributes: [
+          { name: 'Бренд', value: 'IWC' },
+          { name: 'Механізм', value: 'Автоматичний' },
+          { name: 'Колір', value: 'Сталевий' },
+        ],
+      },
+      {
+        name: 'Rolex Cellini Moonphase Platinum',
+        description: '<p><strong>Rolex Cellini Moonphase</strong> у преміальному виконанні.</p>',
+        priceMinor: 65600000,
+        onHand: 1,
+        image: 'watches-7.webp',
+        attributes: [
+          { name: 'Бренд', value: 'Rolex' },
+          { name: 'Механізм', value: 'Автоматичний' },
+          { name: 'Колір', value: 'Платина' },
+        ],
+      },
+      {
+        name: 'Rolex Datejust жіночий',
+        description: '<p>Жіночий <strong>Rolex Datejust</strong> — вишуканість деталей.</p>',
+        priceMinor: 45100000,
+        onHand: 3,
+        image: 'watches-8.webp',
+        attributes: [
+          { name: 'Бренд', value: 'Rolex' },
+          { name: 'Механізм', value: 'Автоматичний' },
+          { name: 'Колір', value: 'Сталевий' },
+        ],
+      },
+      {
+        name: 'Золотий жіночий годинник',
+        description: '<p>Ошатний <strong>золотистий годинник</strong> для жінок.</p>',
+        priceMinor: 3280000,
+        onHand: 10,
+        image: 'watches-9.webp',
+        attributes: [
+          { name: 'Колір', value: 'Золотистий' },
+          { name: 'Механізм', value: 'Кварцовий' },
+          { name: 'Матеріал', value: 'Нержавіюча сталь' },
         ],
       },
     ],
@@ -816,8 +754,7 @@ async function seedCatalog(): Promise<void> {
       await categories.save(category);
     }
 
-    for (let i = 0; i < entry.products.length; i += 1) {
-      const seedProduct = entry.products[i];
+    for (const seedProduct of entry.products) {
       if (await products.findOne({ where: { name: seedProduct.name } })) {
         continue;
       }
@@ -849,34 +786,18 @@ async function seedCatalog(): Promise<void> {
       }
 
       const imageId = randomUUID();
-      const candidates: [string, string][] = [
-        ['jpg', 'image/jpeg'],
-        ['webp', 'image/webp'],
-        ['png', 'image/png'],
-      ];
-      let bytes: Buffer | null = null;
-      let extension = 'svg';
-      let contentType = 'image/svg+xml';
-      for (const [ext, type] of candidates) {
-        try {
-          bytes = await readFile(
-            join(SEED_ASSETS_DIR, `${entry.category.slug}-${i}.${ext}`),
-          );
-          extension = ext;
-          contentType = type;
-          break;
-        } catch {
-          bytes = null;
-        }
-      }
-      if (!bytes) {
-        bytes = tileSvg(
-          seedProduct.name,
-          entry.category.name,
-          entry.initial,
-          entry.from,
-          entry.to,
-        );
+      const ext = seedProduct.image.split('.').pop() ?? 'jpg';
+      let bytes: Buffer;
+      let extension: string;
+      let contentType: string;
+      try {
+        bytes = await readFile(join(SEED_ASSETS_DIR, seedProduct.image));
+        extension = ext;
+        contentType = CONTENT_TYPE_BY_EXT[ext] ?? 'application/octet-stream';
+      } catch {
+        bytes = fallbackSvg(seedProduct.name, entry.category.name);
+        extension = 'svg';
+        contentType = 'image/svg+xml';
       }
       const objectKey = `products/${product.id}/${imageId}.${extension}`;
       await putObject(objectKey, bytes, contentType);
