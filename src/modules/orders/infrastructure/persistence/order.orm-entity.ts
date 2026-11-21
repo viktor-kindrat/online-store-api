@@ -34,6 +34,9 @@ export class OrderOrmEntity {
   @Column({ type: 'jsonb' })
   shippingAddress!: ShippingAddress;
 
+  @Column({ type: 'uuid', nullable: true })
+  promotionId!: string | null;
+
   @Column({ type: 'timestamptz' })
   createdAt!: Date;
 }

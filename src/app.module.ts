@@ -13,6 +13,7 @@ import { IdentityModule } from './modules/identity/identity.module.js';
 import { InventoryModule } from './modules/inventory/inventory.module.js';
 import { OrdersModule } from './modules/orders/orders.module.js';
 import { PaymentsModule } from './modules/payments/payments.module.js';
+import { PromotionsModule } from './modules/promotions/promotions.module.js';
 import { DomainExceptionFilter } from './shared/presentation/domain-exception.filter.js';
 import { SharedModule } from './shared/shared.module.js';
 
@@ -33,6 +34,7 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
     CatalogModule,
     InventoryModule,
     CartModule,
+    PromotionsModule,
     OrdersModule,
     PaymentsModule,
   ],

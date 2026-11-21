@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CartModule } from '../cart/cart.module.js';
 import { CatalogModule } from '../catalog/catalog.module.js';
 import { InventoryModule } from '../inventory/inventory.module.js';
+import { PromotionsModule } from '../promotions/promotions.module.js';
 import { ORDER_REPOSITORY } from './application/ports/order.repository.port.js';
 import { OrdersPaymentFacade } from './application/services/orders-payment.facade.js';
 import { CancelOrderUseCase } from './application/use-cases/cancel-order.use-case.js';
@@ -27,6 +28,7 @@ import { OrdersController } from './presentation/http/orders.controller.js';
     CatalogModule,
     CartModule,
     InventoryModule,
+    PromotionsModule,
   ],
   controllers: [
     OrdersController,

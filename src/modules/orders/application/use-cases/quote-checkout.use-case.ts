@@ -11,6 +11,10 @@ import {
   INVENTORY_PORT,
   type InventoryPort,
 } from '../../../inventory/public/inventory.port.js';
+import {
+  PROMOTIONS_PORT,
+  type PromotionsPort,
+} from '../../../promotions/public/promotions.port.js';
 import type { DeliveryMethodCode } from '../../domain/delivery-method.js';
 import { deliveryFeeOf } from '../../domain/delivery-method.js';
 import { EmptyCartError } from '../../domain/errors/empty-cart.error.js';
@@ -20,6 +24,7 @@ import type { QuoteLineView, QuoteView } from '../results/quote-view.js';
 export interface QuoteCheckoutCommand {
   customerId: string;
   deliveryMethod: DeliveryMethodCode;
+  promoCode?: string;
 }
 
 @Injectable()
@@ -28,6 +33,7 @@ export class QuoteCheckoutUseCase {
     @Inject(CART_READER) private readonly cartReader: CartReader,
     @Inject(CATALOG_READER) private readonly catalog: CatalogReader,
     @Inject(INVENTORY_PORT) private readonly inventory: InventoryPort,
+    @Inject(PROMOTIONS_PORT) private readonly promotions: PromotionsPort,
   ) {}
 
   async execute(command: QuoteCheckoutCommand): Promise<QuoteView> {
@@ -58,14 +64,23 @@ export class QuoteCheckoutUseCase {
       });
     }
 
+    let discountMinor = 0;
+    if (command.promoCode) {
+      const evaluation = await this.promotions.evaluate(
+        command.promoCode,
+        subtotalMinor,
+      );
+      discountMinor = evaluation.discountMinor;
+    }
+
     const deliveryFeeMinor = deliveryFeeOf(command.deliveryMethod);
     return {
       items,
       subtotalMinor,
-      discountMinor: 0,
+      discountMinor,
       deliveryMethod: command.deliveryMethod,
       deliveryFeeMinor,
-      totalMinor: subtotalMinor + deliveryFeeMinor,
+      totalMinor: subtotalMinor - discountMinor + deliveryFeeMinor,
     };
   }
 }

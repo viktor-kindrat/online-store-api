@@ -17,6 +17,7 @@ export class CheckoutController {
     return this.quoteCheckout.execute({
       customerId: user.id,
       deliveryMethod: dto.deliveryMethod,
+      ...(dto.promoCode !== undefined ? { promoCode: dto.promoCode } : {}),
     });
   }
 }

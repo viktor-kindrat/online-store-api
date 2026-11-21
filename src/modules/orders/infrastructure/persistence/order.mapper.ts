@@ -28,6 +28,7 @@ export function toOrderDomain(
     row.deliveryFeeMinor,
     row.totalMinor,
     row.shippingAddress,
+    row.promotionId,
     row.createdAt,
   );
 }
@@ -43,6 +44,7 @@ export function toOrderOrm(order: Order): OrderOrmEntity {
   row.deliveryFeeMinor = order.deliveryFeeMinor;
   row.totalMinor = order.totalMinor;
   row.shippingAddress = order.shippingAddress;
+  row.promotionId = order.promotionId;
   row.createdAt = order.createdAt;
   return row;
 }

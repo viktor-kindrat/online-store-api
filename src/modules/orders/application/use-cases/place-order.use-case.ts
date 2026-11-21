@@ -16,6 +16,10 @@ import {
   type ReservationItem,
 } from '../../../inventory/public/inventory.port.js';
 import {
+  PROMOTIONS_PORT,
+  type PromotionsPort,
+} from '../../../promotions/public/promotions.port.js';
+import {
   TRANSACTION_MANAGER,
   type TransactionManager,
 } from '../../../../shared/application/transaction.js';
@@ -36,6 +40,7 @@ export interface PlaceOrderCommand {
   customerId: string;
   deliveryMethod: DeliveryMethodCode;
   shippingAddress: ShippingAddress;
+  promoCode?: string;
 }
 
 @Injectable()
@@ -45,6 +50,7 @@ export class PlaceOrderUseCase {
     @Inject(CART_WRITER) private readonly cartWriter: CartWriter,
     @Inject(CATALOG_READER) private readonly catalog: CatalogReader,
     @Inject(INVENTORY_PORT) private readonly inventory: InventoryPort,
+    @Inject(PROMOTIONS_PORT) private readonly promotions: PromotionsPort,
     @Inject(ORDER_REPOSITORY) private readonly orders: OrderRepository,
     @Inject(TRANSACTION_MANAGER)
     private readonly transactions: TransactionManager,
@@ -74,14 +80,26 @@ export class PlaceOrderUseCase {
       subtotalMinor += item.lineTotalMinor;
     }
 
+    let discountMinor = 0;
+    let promotionId: string | null = null;
+    if (command.promoCode) {
+      const evaluation = await this.promotions.evaluate(
+        command.promoCode,
+        subtotalMinor,
+      );
+      discountMinor = evaluation.discountMinor;
+      promotionId = evaluation.promotionId;
+    }
+
     const order = Order.create({
       customerId: command.customerId,
       items,
       subtotalMinor,
-      discountMinor: 0,
+      discountMinor,
       deliveryMethod: command.deliveryMethod,
       deliveryFeeMinor: deliveryFeeOf(command.deliveryMethod),
       shippingAddress: command.shippingAddress,
+      promotionId,
     });
 
     const reservationItems: ReservationItem[] = items.map((item) => ({
@@ -92,6 +110,9 @@ export class PlaceOrderUseCase {
     await this.transactions.run(async (tx) => {
       await this.inventory.reserveItems(order.id, reservationItems, tx);
       await this.orders.create(order, tx);
+      if (promotionId) {
+        await this.promotions.recordRedemption(promotionId, order.id, tx);
+      }
       await this.cartWriter.clear(command.customerId, tx);
     });
 

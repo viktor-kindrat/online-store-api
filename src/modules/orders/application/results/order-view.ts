@@ -20,6 +20,7 @@ export interface OrderView {
   deliveryFeeMinor: number;
   totalMinor: number;
   shippingAddress: ShippingAddress;
+  promotionId: string | null;
   items: OrderItemView[];
   createdAt: string;
 }
@@ -34,6 +35,7 @@ export function toOrderView(order: Order): OrderView {
     deliveryFeeMinor: order.deliveryFeeMinor,
     totalMinor: order.totalMinor,
     shippingAddress: order.shippingAddress,
+    promotionId: order.promotionId,
     items: order.items.map((item) => ({
       productId: item.productId,
       productName: item.productName,

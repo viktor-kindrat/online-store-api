@@ -16,6 +16,7 @@ export interface CreateOrderInput {
   deliveryMethod: DeliveryMethodCode;
   deliveryFeeMinor: number;
   shippingAddress: ShippingAddress;
+  promotionId: string | null;
 }
 
 export class Order {
@@ -30,6 +31,7 @@ export class Order {
     public readonly deliveryFeeMinor: number,
     public readonly totalMinor: number,
     public readonly shippingAddress: ShippingAddress,
+    public readonly promotionId: string | null,
     public readonly createdAt: Date,
   ) {}
 
@@ -47,6 +49,7 @@ export class Order {
       input.deliveryFeeMinor,
       totalMinor,
       input.shippingAddress,
+      input.promotionId,
       new Date(),
     );
   }

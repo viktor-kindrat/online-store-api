@@ -35,6 +35,7 @@ export class OrdersController {
       customerId: user.id,
       deliveryMethod: dto.deliveryMethod,
       shippingAddress: dto.shippingAddress,
+      ...(dto.promoCode !== undefined ? { promoCode: dto.promoCode } : {}),
     });
   }
 

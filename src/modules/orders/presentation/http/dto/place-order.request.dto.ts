@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsIn, ValidateNested } from 'class-validator';
+import { IsIn, IsOptional, IsString, MaxLength, ValidateNested } from 'class-validator';
 import {
   DELIVERY_METHOD_CODES,
   type DeliveryMethodCode,
@@ -13,4 +13,9 @@ export class PlaceOrderRequestDto {
   @ValidateNested()
   @Type(() => ShippingAddressDto)
   shippingAddress!: ShippingAddressDto;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  promoCode?: string;
 }
