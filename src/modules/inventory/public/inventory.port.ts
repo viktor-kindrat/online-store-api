@@ -25,4 +25,5 @@ export interface InventoryPort {
   getAvailable(productId: string): Promise<number>;
   setOnHand(productId: string, onHand: number): Promise<void>;
   listBalances(): Promise<StockBalanceView[]>;
+  findExpiredReservationOrderIds(before: Date): Promise<string[]>;
 }

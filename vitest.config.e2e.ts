@@ -6,6 +6,7 @@ export default defineConfig({
     globals: true,
     root: './',
     include: ['**/*.e2e-spec.ts'],
+    exclude: ['**/node_modules/**', '**/dist/**', '**/.claude/**'],
     fileParallelism: false,
     env: {
       NODE_ENV: 'test',

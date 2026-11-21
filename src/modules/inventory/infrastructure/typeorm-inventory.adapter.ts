@@ -127,4 +127,16 @@ export class TypeOrmInventoryAdapter implements InventoryPort {
       available: row.onHand - row.reserved,
     }));
   }
+
+  async findExpiredReservationOrderIds(before: Date): Promise<string[]> {
+    const rows = await this.balances.manager
+      .createQueryBuilder(StockReservationOrmEntity, 'reservation')
+      .select('DISTINCT reservation."orderId"', 'orderId')
+      .where('reservation.status = :status AND reservation."expiresAt" < :before', {
+        status: 'ACTIVE',
+        before,
+      })
+      .getRawMany<{ orderId: string }>();
+    return rows.map((row) => row.orderId);
+  }
 }

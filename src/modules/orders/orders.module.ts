@@ -9,6 +9,7 @@ import { ORDER_REPOSITORY } from './application/ports/order.repository.port.js';
 import { OrdersPaymentFacade } from './application/services/orders-payment.facade.js';
 import { CancelOrderUseCase } from './application/use-cases/cancel-order.use-case.js';
 import { ChangeOrderStatusUseCase } from './application/use-cases/change-order-status.use-case.js';
+import { ExpireReservationsUseCase } from './application/use-cases/expire-reservations.use-case.js';
 import { GetOrderUseCase } from './application/use-cases/get-order.use-case.js';
 import { ListAllOrdersUseCase } from './application/use-cases/list-all-orders.use-case.js';
 import { ListOrdersUseCase } from './application/use-cases/list-orders.use-case.js';
@@ -17,6 +18,7 @@ import { QuoteCheckoutUseCase } from './application/use-cases/quote-checkout.use
 import { OrderItemOrmEntity } from './infrastructure/persistence/order-item.orm-entity.js';
 import { OrderOrmEntity } from './infrastructure/persistence/order.orm-entity.js';
 import { TypeOrmOrderRepository } from './infrastructure/persistence/typeorm-order.repository.js';
+import { ReservationExpiryScheduler } from './infrastructure/reservation-expiry.scheduler.js';
 import { ORDERS_PORT } from './public/orders.port.js';
 import { AdminOrdersController } from './presentation/http/admin-orders.controller.js';
 import { CheckoutController } from './presentation/http/checkout.controller.js';
@@ -46,6 +48,8 @@ import { OrdersController } from './presentation/http/orders.controller.js';
     CancelOrderUseCase,
     ChangeOrderStatusUseCase,
     ListAllOrdersUseCase,
+    ExpireReservationsUseCase,
+    ReservationExpiryScheduler,
     OrdersPaymentFacade,
     { provide: ORDER_REPOSITORY, useClass: TypeOrmOrderRepository },
     { provide: ORDERS_PORT, useExisting: OrdersPaymentFacade },
