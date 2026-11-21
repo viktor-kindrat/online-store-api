@@ -1,0 +1,57 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: online_store
+      POSTGRES_PASSWORD: online_store
+      POSTGRES_DB: online_store
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U online_store -d online_store"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: .
+    command: sh -c "node dist/infrastructure/database/migrate.js && node dist/infrastructure/database/seed.js && node dist/main.js"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_USER: online_store
+      DATABASE_PASSWORD: online_store
+      DATABASE_NAME: online_store
+      DATABASE_SSL: "false"
+      DATABASE_LOGGING: "false"
+      JWT_ACCESS_SECRET: compose_dev_access_secret_change_me_32
+      JWT_ACCESS_TTL: 900s
+      REFRESH_TTL_DAYS: "7"
+      ADMIN_EMAIL: admin@example.com
+      ADMIN_PASSWORD: admin12345
+      CORS_ORIGIN: http://localhost:8080
+      STORAGE_DIR: storage/uploads
+    ports:
+      - "8081:3000"
+
+  web:
+    build:
+      context: ../online-store-web
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8081/api/v1
+    depends_on:
+      - api
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+    ports:
+      - "8080:3000"
+
+volumes:
+  postgres_data:

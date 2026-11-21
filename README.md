@@ -153,3 +153,15 @@ docker compose up --build        # API + PostgreSQL
 ```
 
 Requires host port 3000 (API) and the configured DATABASE_PORT free.
+
+## Run the whole stack (Docker)
+
+Requires Docker and the frontend repo checked out next to this one (`../online-store-web`).
+
+```bash
+docker compose -f docker-compose.full.yml up --build
+```
+
+- Web: http://localhost:8080 · API: http://localhost:8081/api/v1 · Swagger: http://localhost:8081/docs
+- Database migrations and a demo seed (admin `admin@example.com` / `admin12345`, sample catalog, `WELCOME10` promo) run automatically when the API container starts.
+- Stop with `docker compose -f docker-compose.full.yml down` (add `-v` to also drop the database volume).
