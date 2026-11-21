@@ -60,3 +60,6 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 # Claude Code local workspace (ignored)
 .claude/
+
+# Local-only docs (not published to GitHub)
+docs/
