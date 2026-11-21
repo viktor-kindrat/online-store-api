@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { InventoryModule } from '../inventory/inventory.module.js';
 import { OrdersModule } from '../orders/orders.module.js';
+import { IdempotencyModule } from '../../shared/idempotency/idempotency.module.js';
 import {
   ORDER_PAID_OBSERVERS,
   type OrderPaidObserver,
@@ -26,6 +27,7 @@ import { PaymentWebhookController } from './presentation/http/webhook.controller
     TypeOrmModule.forFeature([PaymentOrmEntity, PaymentAttemptOrmEntity]),
     OrdersModule,
     InventoryModule,
+    IdempotencyModule,
   ],
   controllers: [PaymentsController, PaymentWebhookController],
   providers: [

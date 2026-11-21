@@ -7,8 +7,10 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  UseInterceptors,
 } from '@nestjs/common';
 import { CurrentUser, type AuthenticatedUser } from '../../../identity/public/index.js';
+import { IdempotencyInterceptor } from '../../../../shared/idempotency/idempotency.interceptor.js';
 import type { OrderView } from '../../application/results/order-view.js';
 import { CancelOrderUseCase } from '../../application/use-cases/cancel-order.use-case.js';
 import { GetOrderUseCase } from '../../application/use-cases/get-order.use-case.js';
@@ -27,6 +29,7 @@ export class OrdersController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @UseInterceptors(IdempotencyInterceptor)
   place(
     @CurrentUser() user: AuthenticatedUser,
     @Body() dto: PlaceOrderRequestDto,

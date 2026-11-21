@@ -6,8 +6,10 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  UseInterceptors,
 } from '@nestjs/common';
 import { CurrentUser, type AuthenticatedUser } from '../../../identity/public/index.js';
+import { IdempotencyInterceptor } from '../../../../shared/idempotency/idempotency.interceptor.js';
 import type {
   PaymentInitiatedView,
   PaymentView,
@@ -25,6 +27,7 @@ export class PaymentsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @UseInterceptors(IdempotencyInterceptor)
   initiate(
     @CurrentUser() user: AuthenticatedUser,
     @Param('orderId', ParseUUIDPipe) orderId: string,
