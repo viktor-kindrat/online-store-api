@@ -1,5 +1,6 @@
 import type { Category } from '../../domain/entities/category.js';
 import type { Product } from '../../domain/entities/product.js';
+import type { ProductAttribute } from '../../domain/entities/product-attribute.js';
 import type { ProductImage } from '../../domain/entities/product-image.js';
 import type { ProductStatus } from '../../domain/product-status.js';
 
@@ -25,8 +26,20 @@ export class ProductImageView {
   sortOrder: number;
 }
 
+export class ProductAttributeView {
+  name: string;
+  value: string;
+}
+
 export class ProductDetailView extends ProductView {
   images: ProductImageView[];
+  attributes: ProductAttributeView[];
+  availableQuantity: number;
+}
+
+export class MediaAssetView {
+  id: string;
+  url: string;
 }
 
 export class ProductListResponse {
@@ -59,4 +72,10 @@ export function toProductImageView(image: ProductImage): ProductImageView {
     url: `/api/v1/media/${image.id}`,
     sortOrder: image.sortOrder,
   };
+}
+
+export function toProductAttributeView(
+  attribute: ProductAttribute,
+): ProductAttributeView {
+  return { name: attribute.name, value: attribute.value };
 }

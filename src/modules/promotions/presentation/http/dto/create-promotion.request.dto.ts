@@ -3,6 +3,7 @@ import {
   IsInt,
   IsISO8601,
   IsString,
+  Max,
   MaxLength,
   Min,
   MinLength,
@@ -11,6 +12,7 @@ import {
   DISCOUNT_TYPES,
   type DiscountType,
 } from '../../../domain/discount-type.js';
+import { PROMOTION_LIMITS } from '../../../domain/promotion.constants.js';
 
 export class CreatePromotionRequestDto {
   @IsString()
@@ -23,10 +25,12 @@ export class CreatePromotionRequestDto {
 
   @IsInt()
   @Min(0)
+  @Max(PROMOTION_LIMITS.MAX_VALUE)
   value!: number;
 
   @IsInt()
   @Min(0)
+  @Max(PROMOTION_LIMITS.MAX_MIN_ORDER_MINOR)
   minOrderMinor!: number;
 
   @IsISO8601()
@@ -34,5 +38,6 @@ export class CreatePromotionRequestDto {
 
   @IsInt()
   @Min(1)
+  @Max(PROMOTION_LIMITS.MAX_USAGE_LIMIT)
   usageLimit!: number;
 }

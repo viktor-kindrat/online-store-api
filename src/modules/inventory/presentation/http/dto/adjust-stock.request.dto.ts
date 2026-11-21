@@ -1,4 +1,6 @@
-import { IsInt, IsUUID, Min } from 'class-validator';
+import { IsInt, IsUUID, Max, Min } from 'class-validator';
+
+const MAX_ON_HAND = 1_000_000;
 
 export class AdjustStockRequestDto {
   @IsUUID()
@@ -6,5 +8,6 @@ export class AdjustStockRequestDto {
 
   @IsInt()
   @Min(0)
+  @Max(MAX_ON_HAND)
   onHand!: number;
 }

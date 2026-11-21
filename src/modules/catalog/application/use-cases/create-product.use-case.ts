@@ -7,6 +7,11 @@ import {
   type CategoryRepository,
 } from '../ports/category.repository.port.js';
 import {
+  PRODUCT_ATTRIBUTE_REPOSITORY,
+  type ProductAttributeInput,
+  type ProductAttributeRepository,
+} from '../ports/product-attribute.repository.port.js';
+import {
   PRODUCT_REPOSITORY,
   type ProductRepository,
 } from '../ports/product.repository.port.js';
@@ -18,6 +23,7 @@ export interface CreateProductCommand {
   description: string;
   priceMinor: number;
   status?: ProductStatus;
+  attributes?: ProductAttributeInput[];
 }
 
 @Injectable()
@@ -26,6 +32,8 @@ export class CreateProductUseCase {
     @Inject(PRODUCT_REPOSITORY) private readonly products: ProductRepository,
     @Inject(CATEGORY_REPOSITORY)
     private readonly categories: CategoryRepository,
+    @Inject(PRODUCT_ATTRIBUTE_REPOSITORY)
+    private readonly attributes: ProductAttributeRepository,
   ) {}
 
   async execute(command: CreateProductCommand): Promise<ProductView> {
@@ -41,6 +49,9 @@ export class CreateProductUseCase {
       status: command.status ?? 'ACTIVE',
     });
     await this.products.save(product);
+    if (command.attributes) {
+      await this.attributes.replaceForProduct(product.id, command.attributes);
+    }
     return toProductView(product);
   }
 }
