@@ -39,8 +39,9 @@ export class GetProductUseCase {
     if (!product || product.status !== 'ACTIVE') {
       throw new ProductNotFoundError();
     }
-    const view = toProductView(product);
     const images = await this.images.findByProduct(id);
+    const imageViews = images.map(toProductImageView);
+    const view = toProductView(product, imageViews[0]?.url ?? null);
     const attributes = await this.attributes.findByProduct(id);
     const availableQuantity = await this.inventory.getAvailable(id);
     return {
@@ -50,7 +51,8 @@ export class GetProductUseCase {
       description: view.description,
       priceMinor: view.priceMinor,
       status: view.status,
-      images: images.map(toProductImageView),
+      primaryImageUrl: view.primaryImageUrl,
+      images: imageViews,
       attributes: attributes.map(toProductAttributeView),
       availableQuantity,
     };

@@ -4,11 +4,19 @@ import {
   type PaginatedResult,
 } from '../../../../shared/application/pagination.js';
 import {
+  PRODUCT_IMAGE_REPOSITORY,
+  type ProductImageRepository,
+} from '../ports/product-image.repository.port.js';
+import {
   PRODUCT_REPOSITORY,
   type ProductListFilter,
   type ProductRepository,
 } from '../ports/product.repository.port.js';
-import { toProductView, type ProductView } from '../results/catalog-views.js';
+import {
+  mediaUrlForImage,
+  toProductView,
+  type ProductView,
+} from '../results/catalog-views.js';
 
 export interface ListProductsQuery {
   page: number;
@@ -21,6 +29,8 @@ export interface ListProductsQuery {
 export class ListProductsUseCase {
   constructor(
     @Inject(PRODUCT_REPOSITORY) private readonly products: ProductRepository,
+    @Inject(PRODUCT_IMAGE_REPOSITORY)
+    private readonly images: ProductImageRepository,
   ) {}
 
   async execute(query: ListProductsQuery): Promise<PaginatedResult<ProductView>> {
@@ -36,11 +46,16 @@ export class ListProductsUseCase {
       filter.search = query.search;
     }
     const page = await this.products.list(filter);
-    return buildPaginatedResult(
-      page.items.map(toProductView),
-      page.total,
-      query.page,
-      query.limit,
+    const primaryImages = await this.images.findPrimaryByProductIds(
+      page.items.map((product) => product.id),
     );
+    const items = page.items.map((product) => {
+      const imageId = primaryImages.get(product.id);
+      return toProductView(
+        product,
+        imageId ? mediaUrlForImage(imageId) : null,
+      );
+    });
+    return buildPaginatedResult(items, page.total, query.page, query.limit);
   }
 }

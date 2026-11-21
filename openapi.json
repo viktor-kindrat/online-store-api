@@ -1776,6 +1776,10 @@
               "ARCHIVED"
             ],
             "type": "string"
+          },
+          "primaryImageUrl": {
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -1784,7 +1788,8 @@
           "name",
           "description",
           "priceMinor",
-          "status"
+          "status",
+          "primaryImageUrl"
         ]
       },
       "ProductListResponse": {
@@ -1881,6 +1886,10 @@
             ],
             "type": "string"
           },
+          "primaryImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
           "images": {
             "type": "array",
             "items": {
@@ -1904,6 +1913,7 @@
           "description",
           "priceMinor",
           "status",
+          "primaryImageUrl",
           "images",
           "attributes",
           "availableQuantity"

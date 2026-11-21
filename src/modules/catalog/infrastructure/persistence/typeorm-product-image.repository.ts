@@ -29,6 +29,28 @@ export class TypeOrmProductImageRepository implements ProductImageRepository {
     return rows.map(toProductImageDomain);
   }
 
+  async findPrimaryByProductIds(
+    productIds: string[],
+  ): Promise<Map<string, string>> {
+    const primary = new Map<string, string>();
+    if (productIds.length === 0) {
+      return primary;
+    }
+    const rows = await this.repository
+      .createQueryBuilder('image')
+      .select(['image.id', 'image.productId', 'image.sortOrder'])
+      .where('image.productId IN (:...productIds)', { productIds })
+      .orderBy('image.productId', 'ASC')
+      .addOrderBy('image.sortOrder', 'ASC')
+      .getMany();
+    for (const row of rows) {
+      if (!primary.has(row.productId)) {
+        primary.set(row.productId, row.id);
+      }
+    }
+    return primary;
+  }
+
   async countByProduct(productId: string): Promise<number> {
     return this.repository.count({ where: { productId } });
   }

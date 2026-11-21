@@ -17,6 +17,7 @@ export class ProductView {
   description: string;
   priceMinor: number;
   status: ProductStatus;
+  primaryImageUrl: string | null;
 }
 
 export class ProductImageView {
@@ -54,7 +55,14 @@ export function toCategoryView(category: Category): CategoryView {
   return { id: category.id, name: category.name, slug: category.slug };
 }
 
-export function toProductView(product: Product): ProductView {
+export function mediaUrlForImage(imageId: string): string {
+  return `/api/v1/media/${imageId}`;
+}
+
+export function toProductView(
+  product: Product,
+  primaryImageUrl: string | null = null,
+): ProductView {
   return {
     id: product.id,
     categoryId: product.categoryId,
@@ -62,6 +70,7 @@ export function toProductView(product: Product): ProductView {
     description: product.description,
     priceMinor: product.priceMinor,
     status: product.status,
+    primaryImageUrl,
   };
 }
 
@@ -69,7 +78,7 @@ export function toProductImageView(image: ProductImage): ProductImageView {
   return {
     id: image.id,
     productId: image.productId,
-    url: `/api/v1/media/${image.id}`,
+    url: mediaUrlForImage(image.id),
     sortOrder: image.sortOrder,
   };
 }
