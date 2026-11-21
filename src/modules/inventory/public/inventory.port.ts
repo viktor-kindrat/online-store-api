@@ -1,17 +1,13 @@
 import type { TransactionContext } from '../../../shared/application/transaction.js';
+import type { StockBalanceView } from '../application/results/inventory-views.js';
+
+export { StockBalanceView } from '../application/results/inventory-views.js';
 
 export const INVENTORY_PORT = 'INVENTORY_PORT';
 
 export interface ReservationItem {
   productId: string;
   quantity: number;
-}
-
-export interface StockBalanceView {
-  productId: string;
-  onHand: number;
-  reserved: number;
-  available: number;
 }
 
 export interface InventoryPort {

@@ -7,7 +7,7 @@ import {
   Post,
 } from '@nestjs/common';
 import { Roles } from '../../../identity/public/index.js';
-import type { StockBalanceView } from '../../public/inventory.port.js';
+import { StockBalanceView } from '../../application/results/inventory-views.js';
 import { AdjustStockUseCase } from '../../application/use-cases/adjust-stock.use-case.js';
 import { ListStockUseCase } from '../../application/use-cases/list-stock.use-case.js';
 import { AdjustStockRequestDto } from './dto/adjust-stock.request.dto.js';

@@ -1,15 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { Public } from '../../../identity/public/index.js';
-import {
-  DELIVERY_METHODS,
-  type DeliveryMethodCode,
-} from '../../domain/delivery-method.js';
-
-interface DeliveryMethodView {
-  code: DeliveryMethodCode;
-  name: string;
-  feeMinor: number;
-}
+import { DeliveryMethodView } from '../../application/results/delivery-method-view.js';
+import { DELIVERY_METHODS } from '../../domain/delivery-method.js';
 
 @Controller('delivery-methods')
 export class DeliveryMethodsController {
