@@ -9,6 +9,7 @@ import { REFRESH_SESSION_REPOSITORY } from './application/ports/refresh-session.
 import { TOKEN_SERVICE } from './application/ports/token-service.port.js';
 import { USER_ACCOUNT_REPOSITORY } from './application/ports/user-account.repository.port.js';
 import { AuthTokenIssuer } from './application/services/auth-token-issuer.js';
+import { GetCurrentUserUseCase } from './application/use-cases/get-current-user.use-case.js';
 import { LoginUseCase } from './application/use-cases/login.use-case.js';
 import { LogoutUseCase } from './application/use-cases/logout.use-case.js';
 import { RefreshSessionUseCase } from './application/use-cases/refresh-session.use-case.js';
@@ -42,6 +43,7 @@ import { RolesGuard } from './presentation/http/guards/roles.guard.js';
     LoginUseCase,
     RefreshSessionUseCase,
     LogoutUseCase,
+    GetCurrentUserUseCase,
     AuthTokenIssuer,
     { provide: USER_ACCOUNT_REPOSITORY, useClass: TypeOrmUserAccountRepository },
     {

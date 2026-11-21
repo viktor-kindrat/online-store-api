@@ -16,6 +16,7 @@ import type { Env } from '../../../../infrastructure/config/env.schema.js';
 import type { AuthTokens } from '../../application/ports/token-service.port.js';
 import { toUserView, UserView } from '../../application/results/user-view.js';
 import { AuthTokenIssuer } from '../../application/services/auth-token-issuer.js';
+import { GetCurrentUserUseCase } from '../../application/use-cases/get-current-user.use-case.js';
 import { LoginUseCase } from '../../application/use-cases/login.use-case.js';
 import { LogoutUseCase } from '../../application/use-cases/logout.use-case.js';
 import { RefreshSessionUseCase } from '../../application/use-cases/refresh-session.use-case.js';
@@ -25,6 +26,7 @@ import {
   CSRF_TOKEN_COOKIE,
   REFRESH_TOKEN_COOKIE,
 } from './cookie.constants.js';
+import { CurrentUser, type AuthenticatedUser } from './decorators/current-user.decorator.js';
 import { Public } from './decorators/public.decorator.js';
 import { LoginRequestDto } from './dto/login.request.dto.js';
 import { RegisterRequestDto } from './dto/register.request.dto.js';
@@ -42,6 +44,7 @@ export class AuthController {
     private readonly loginUser: LoginUseCase,
     private readonly refreshSession: RefreshSessionUseCase,
     private readonly logoutUser: LogoutUseCase,
+    private readonly getCurrentUser: GetCurrentUserUseCase,
     private readonly tokenIssuer: AuthTokenIssuer,
     private readonly config: ConfigService<Env, true>,
   ) {}
@@ -97,6 +100,11 @@ export class AuthController {
     response.clearCookie(ACCESS_TOKEN_COOKIE, { path: '/' });
     response.clearCookie(REFRESH_TOKEN_COOKIE, { path: '/' });
     response.clearCookie(CSRF_TOKEN_COOKIE, { path: '/' });
+  }
+
+  @Get('me')
+  me(@CurrentUser() user: AuthenticatedUser): Promise<UserView> {
+    return this.getCurrentUser.execute(user.id);
   }
 
   @Public()

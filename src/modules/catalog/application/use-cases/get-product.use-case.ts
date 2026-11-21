@@ -1,5 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
+import {
+  INVENTORY_PORT,
+  type InventoryPort,
+} from '../../../inventory/public/inventory.port.js';
 import { ProductNotFoundError } from '../../domain/errors/product-not-found.error.js';
+import {
+  PRODUCT_ATTRIBUTE_REPOSITORY,
+  type ProductAttributeRepository,
+} from '../ports/product-attribute.repository.port.js';
 import {
   PRODUCT_IMAGE_REPOSITORY,
   type ProductImageRepository,
@@ -9,6 +17,7 @@ import {
   type ProductRepository,
 } from '../ports/product.repository.port.js';
 import {
+  toProductAttributeView,
   toProductImageView,
   toProductView,
   type ProductDetailView,
@@ -20,6 +29,9 @@ export class GetProductUseCase {
     @Inject(PRODUCT_REPOSITORY) private readonly products: ProductRepository,
     @Inject(PRODUCT_IMAGE_REPOSITORY)
     private readonly images: ProductImageRepository,
+    @Inject(PRODUCT_ATTRIBUTE_REPOSITORY)
+    private readonly attributes: ProductAttributeRepository,
+    @Inject(INVENTORY_PORT) private readonly inventory: InventoryPort,
   ) {}
 
   async execute(id: string): Promise<ProductDetailView> {
@@ -29,6 +41,8 @@ export class GetProductUseCase {
     }
     const view = toProductView(product);
     const images = await this.images.findByProduct(id);
+    const attributes = await this.attributes.findByProduct(id);
+    const availableQuantity = await this.inventory.getAvailable(id);
     return {
       id: view.id,
       categoryId: view.categoryId,
@@ -37,6 +51,8 @@ export class GetProductUseCase {
       priceMinor: view.priceMinor,
       status: view.status,
       images: images.map(toProductImageView),
+      attributes: attributes.map(toProductAttributeView),
+      availableQuantity,
     };
   }
 }
