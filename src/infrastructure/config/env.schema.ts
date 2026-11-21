@@ -16,6 +16,9 @@ export const envSchema = z.object({
   DATABASE_NAME: z.string().min(1),
   DATABASE_SSL: booleanFromString.default(false),
   DATABASE_LOGGING: booleanFromString.default(false),
+  JWT_ACCESS_SECRET: z.string().min(16),
+  JWT_ACCESS_TTL: z.string().min(1).default('900s'),
+  REFRESH_TTL_DAYS: z.coerce.number().int().positive().default(7),
 });
 
 export type Env = z.infer<typeof envSchema>;

@@ -1,11 +1,15 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_FILTER } from '@nestjs/core';
 import { createObserveModule } from '@nestjs/observe';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { validateEnv } from './infrastructure/config/env.schema.js';
 import { DatabaseModule } from './infrastructure/database/database.module.js';
 import { HealthModule } from './health/health.module.js';
+import { CatalogModule } from './modules/catalog/catalog.module.js';
+import { IdentityModule } from './modules/identity/identity.module.js';
+import { DomainExceptionFilter } from './shared/presentation/domain-exception.filter.js';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -19,8 +23,13 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
     }),
     DatabaseModule,
     HealthModule,
+    IdentityModule,
+    CatalogModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    { provide: APP_FILTER, useClass: DomainExceptionFilter },
+  ],
 })
 export class AppModule {}
