@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import type { Env } from '../../infrastructure/config/env.schema.js';
 import { InventoryModule } from '../inventory/inventory.module.js';
 import { CATEGORY_REPOSITORY } from './application/ports/category.repository.port.js';
 import { MEDIA_ASSET_REPOSITORY } from './application/ports/media-asset.repository.port.js';
@@ -33,6 +35,7 @@ import { TypeOrmProductAttributeRepository } from './infrastructure/persistence/
 import { TypeOrmProductImageRepository } from './infrastructure/persistence/typeorm-product-image.repository.js';
 import { TypeOrmProductRepository } from './infrastructure/persistence/typeorm-product.repository.js';
 import { LocalFilesystemStorageAdapter } from './infrastructure/storage/local-filesystem-storage.adapter.js';
+import { S3StorageAdapter } from './infrastructure/storage/s3-storage.adapter.js';
 import { AdminCategoriesController } from './presentation/http/admin-categories.controller.js';
 import { AdminMediaController } from './presentation/http/admin-media.controller.js';
 import { AdminProductImagesController } from './presentation/http/admin-product-images.controller.js';
@@ -88,7 +91,14 @@ import { ProductsController } from './presentation/http/products.controller.js';
       useClass: TypeOrmProductAttributeRepository,
     },
     { provide: MEDIA_ASSET_REPOSITORY, useClass: TypeOrmMediaAssetRepository },
-    { provide: STORAGE_PORT, useClass: LocalFilesystemStorageAdapter },
+    {
+      provide: STORAGE_PORT,
+      useFactory: (config: ConfigService<Env, true>) =>
+        config.get('STORAGE_DRIVER', { infer: true }) === 's3'
+          ? new S3StorageAdapter(config)
+          : new LocalFilesystemStorageAdapter(config),
+      inject: [ConfigService],
+    },
     { provide: CATALOG_READER, useClass: CatalogReaderAdapter },
   ],
   exports: [CATALOG_READER],
