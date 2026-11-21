@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import bcrypt from 'bcryptjs';
 import { randomUUID } from 'node:crypto';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { CategoryOrmEntity } from '../../modules/catalog/infrastructure/persistence/category.orm-entity.js';
@@ -14,6 +14,7 @@ import { PromotionOrmEntity } from '../../modules/promotions/infrastructure/pers
 import { AppDataSource } from './data-source.js';
 
 const SALT_ROUNDS = 12;
+const SEED_ASSETS_DIR = resolve(import.meta.dirname, '../../../seed-assets');
 const STORAGE_DRIVER = process.env.STORAGE_DRIVER ?? 'local';
 const s3 =
   STORAGE_DRIVER === 's3'
@@ -815,7 +816,8 @@ async function seedCatalog(): Promise<void> {
       await categories.save(category);
     }
 
-    for (const seedProduct of entry.products) {
+    for (let i = 0; i < entry.products.length; i += 1) {
+      const seedProduct = entry.products[i];
       if (await products.findOne({ where: { name: seedProduct.name } })) {
         continue;
       }
@@ -847,15 +849,37 @@ async function seedCatalog(): Promise<void> {
       }
 
       const imageId = randomUUID();
-      const objectKey = `products/${product.id}/${imageId}.svg`;
-      const svg = tileSvg(
-        seedProduct.name,
-        entry.category.name,
-        entry.initial,
-        entry.from,
-        entry.to,
-      );
-      await putObject(objectKey, svg, 'image/svg+xml');
+      const candidates: [string, string][] = [
+        ['jpg', 'image/jpeg'],
+        ['webp', 'image/webp'],
+        ['png', 'image/png'],
+      ];
+      let bytes: Buffer | null = null;
+      let extension = 'svg';
+      let contentType = 'image/svg+xml';
+      for (const [ext, type] of candidates) {
+        try {
+          bytes = await readFile(
+            join(SEED_ASSETS_DIR, `${entry.category.slug}-${i}.${ext}`),
+          );
+          extension = ext;
+          contentType = type;
+          break;
+        } catch {
+          bytes = null;
+        }
+      }
+      if (!bytes) {
+        bytes = tileSvg(
+          seedProduct.name,
+          entry.category.name,
+          entry.initial,
+          entry.from,
+          entry.to,
+        );
+      }
+      const objectKey = `products/${product.id}/${imageId}.${extension}`;
+      await putObject(objectKey, bytes, contentType);
       const image = new ProductImageOrmEntity();
       image.id = imageId;
       image.productId = product.id;
