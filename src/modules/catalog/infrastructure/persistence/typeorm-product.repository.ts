@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { type FindOptionsWhere, ILike, Repository } from 'typeorm';
+import {
+  type FindOptionsOrder,
+  type FindOptionsWhere,
+  ILike,
+  Repository,
+} from 'typeorm';
 import type { Product } from '../../domain/entities/product.js';
 import type {
   ProductListFilter,
@@ -33,11 +38,16 @@ export class TypeOrmProductRepository implements ProductRepository {
     if (filter.search) {
       where.name = ILike(`%${filter.search}%`);
     }
+    const direction = filter.sortOrder === 'desc' ? 'DESC' : 'ASC';
+    const order: FindOptionsOrder<ProductOrmEntity> =
+      filter.sortBy === 'price'
+        ? { priceMinor: direction }
+        : { name: direction };
     const [rows, total] = await this.repository.findAndCount({
       where,
       skip: (filter.page - 1) * filter.limit,
       take: filter.limit,
-      order: { name: 'ASC' },
+      order,
     });
     return { items: rows.map(toProductDomain), total };
   }

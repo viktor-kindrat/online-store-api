@@ -3,12 +3,17 @@ import type { ProductStatus } from '../../domain/product-status.js';
 
 export const PRODUCT_REPOSITORY = 'PRODUCT_REPOSITORY';
 
+export type ProductSortField = 'name' | 'price';
+export type ProductSortOrder = 'asc' | 'desc';
+
 export interface ProductListFilter {
   page: number;
   limit: number;
   status?: ProductStatus;
   categoryId?: string;
   search?: string;
+  sortBy?: ProductSortField;
+  sortOrder?: ProductSortOrder;
 }
 
 export interface ProductListPage {

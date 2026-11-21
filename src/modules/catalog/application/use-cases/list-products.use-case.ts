@@ -23,6 +23,8 @@ export interface ListProductsQuery {
   limit: number;
   categoryId?: string;
   search?: string;
+  sortBy?: ProductListFilter['sortBy'];
+  sortOrder?: ProductListFilter['sortOrder'];
 }
 
 @Injectable()
@@ -44,6 +46,12 @@ export class ListProductsUseCase {
     }
     if (query.search !== undefined) {
       filter.search = query.search;
+    }
+    if (query.sortBy !== undefined) {
+      filter.sortBy = query.sortBy;
+    }
+    if (query.sortOrder !== undefined) {
+      filter.sortOrder = query.sortOrder;
     }
     const page = await this.products.list(filter);
     const primaryImages = await this.images.findPrimaryByProductIds(
