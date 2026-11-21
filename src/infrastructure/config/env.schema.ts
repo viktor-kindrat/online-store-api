@@ -20,6 +20,7 @@ export const envSchema = z.object({
   JWT_ACCESS_TTL: z.string().min(1).default('900s'),
   REFRESH_TTL_DAYS: z.coerce.number().int().positive().default(7),
   STORAGE_DIR: z.string().min(1).default('storage/uploads'),
+  CORS_ORIGIN: z.string().min(1).default('http://localhost:3000'),
 });
 
 export type Env = z.infer<typeof envSchema>;
